@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUBYFIGHT</title>
+  <!-- ピクセルフォントの読み込み -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      min-height: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+      font-family: 'Press Start 2P', monospace;
+    }
+    canvas {
+      /* 16:9 を保ちつつビューポートに最大表示（内部解像度は 960×540 のまま） */
+      image-rendering: pixelated;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      background-color: #2e0f0f; /* デフォルト背景（赤系） */
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="960" height="540"></canvas>
+
+  <script>
+    // ==========================================
+    // CONFIG: 差し替え可能な要素（使い回し用設計）
+    // ==========================================
+    const CONFIG = {
+      // タイトル画面のロゴ画像
+      // 空の場合はCanvas描画による「RUBYFIGHT」のダミーロゴが表示されます。
+      TITLE_LOGO_URL: '',
+
+      // 画面・フィールド設定 (16:9モニター想定に最適化)
+      WIDTH: 960,
+      HEIGHT: 540,
+      TILE_SIZE: 20,
+      GRID_COLS: 32, 
+      GRID_ROWS: 18, 
+      
+      // プレイヤー設定
+      PLAYER_SIZE: 28, 
+      BASE_SPEED: 160, 
+      SPEED_UP_MULTIPLIER: 1.3, 
+      CPU_SPEED_MULTIPLIER: 1.15, 
+      
+      // カラーパレット（全体を赤ベースに変更、P1を赤・P2を青に）
+      COLORS: {
+        bg: '#2e0f0f',         // 画面全体の背景色（暗い赤）
+        fieldBg: '#4a1a1a',    // プレイエリアの未占有色（暗い赤茶）
+        p1: { 
+          tile: '#e65c5c',     // P1の陣地枠色（明るい赤）
+          player: '#c44848'    // P1のキャラクター色（レッド）
+        },
+        p2: { 
+          tile: '#6ea2e4',     // P2の陣地枠色（明るい青）
+          player: '#487ec4'    // P2のキャラクター色（ブルー）
+        },
+        ui: '#ffdddd',         // テキストなどのUI色（ほんのり赤い白）
+        highlight: '#ffffff'   
+      },
+
+      GAME_TIME: 60,         
+      RUSH_TIME: 10,         
+      AUTO_START_SEC: 5      
+    };
+
+    // ==========================================
+    // ルビー（ダイヤモンド）型フィールドのマスク定義
+    // '0': 有効なプレイエリア, ' ': プレイ不可エリア
+    // ★ 頂点を少し下げてルビーの形を調整
+    // ==========================================
+    const FIELD_MASK = [
+      "          000000000000          ", // 0
+      "         00000000000000         ", // 1
+      "       000000000000000000       ", // 2
+      "     0000000000000000000000     ", // 3
+      "   00000000000000000000000000   ", // 4
+      " 000000000000000000000000000000 ", // 5 (★ 横の最大幅を上に3マス移動)
+      "  0000000000000000000000000000  ", // 6
+      "   00000000000000000000000000   ", // 7
+      "    000000000000000000000000    ", // 8
+      "     0000000000000000000000     ", // 9
+      "      00000000000000000000      ", // 10
+      "       000000000000000000       ", // 11
+      "        0000000000000000        ", // 12
+      "         00000000000000         ", // 13
+      "          000000000000          ", // 14
+      "           0000000000           ", // 15
+      "            00000000            ", // 16
+      "             000000             "  // 17 (最下部)
+    ];
+
+    // ==========================================
+    // グローバル変数・状態管理
+    // ==========================================
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    const FIELD_WIDTH = CONFIG.TILE_SIZE * CONFIG.GRID_COLS;   
+    const FIELD_HEIGHT = CONFIG.TILE_SIZE * CONFIG.GRID_ROWS;  
+    const OFFSET_X = (CONFIG.WIDTH - FIELD_WIDTH) / 2;         
+    const OFFSET_Y = 110; 
+
+    let state = 'TITLE'; 
+    let mode = 1;        
+    
+    let lastInputTime = Date.now();
+    let stateStartTime = 0;
+    
+    let timeRemaining = CONFIG.GAME_TIME;
+    let p1Score = 0;
+    let p2Score = 0;
+
+    let grid = [];
+    let effectGrid = []; 
+    let titleLogoImg = null; // 背景ロゴ用の変数は削除し、タイトルのみ残す
+    
+    let p1 = { x: 0, y: 0 };
+    let p2 = { x: 0, y: 0 };
+    
+    let flags1 = []; 
+    let flags2 = []; 
+
+    let cpuTarget = null;
+    let cpuWaitTimer = 0;
+
+    let keyState = {};
+    let lastTime = performance.now();
+
+    // ==========================================
+    // 主人公キャラクターのドット絵スプライト定義 (C型キャラクターに最適化)
+    // 0:主線 1:影 2:体色 3:ハイライト 4:白目 5:黒目 6:口の奥 7:舌
+    // ==========================================
+    const PLAYER_SPRITE = [
+      "           0000000000           ",
+      "         00333333333300         ",
+      "        0333330000033330        ",
+      "       033320044444002330       ",
+      "      03322044444444402230      ",
+      "      032204455545554402220     ",
+      "     0322204455545554402220     ",
+      "     0322204445544554402220     ",
+      "     0322204444444444402220     ",
+      "     0322220444444444022220     ",
+      "     0322222004444400222220     ",
+      "     0322222220000022222220     ",
+      "     032222222222222222220      ",
+      "      0322220022222222220       ",
+      "      032220660000002220        ",
+      "      032206666666660220        ",
+      "      032206667776660220        ",
+      "       03206677777660220        ",
+      "       0322007777700220         ",
+      "       0322220000022220         ",
+      "       032222222222220     00   ",
+      "        0322222222220    00330  ",
+      "         01111222220    0332220 ",
+      "   00    0111111220    032222220",
+      "  0330   0111111220   0322222220",
+      "  03220001111111220   0322222110",
+      "   03222111111111110   01111110 ",
+      "    01111111111111110   011110  ",
+      "     000000000000000000000000   ",
+      "                                "
+    ];
+
+    // ==========================================
+    // アセット（タイトルロゴ等）の読み込み
+    // ==========================================
+    function initAssets(callback) {
+      if (CONFIG.TITLE_LOGO_URL) {
+        titleLogoImg = new Image();
+        titleLogoImg.crossOrigin = 'Anonymous';
+        titleLogoImg.onload = () => { if (callback) callback(); };
+        titleLogoImg.onerror = () => { if (callback) callback(); };
+        titleLogoImg.src = CONFIG.TITLE_LOGO_URL;
+      } else {
+        if (callback) callback();
+      }
+    }
+
+    // ==========================================
+    // サウンド機能
+    // ==========================================
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    let lastPaintSoundTime = 0;
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'paint') {
+        const nowTs = Date.now();
+        if (nowTs - lastPaintSoundTime < 60) return;
+        lastPaintSoundTime = nowTs;
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } else if (type === 'flag') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(600, now);
+        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      } else if (type === 'close') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, now);
+        osc.frequency.setValueAtTime(880, now + 0.1);
+        osc.frequency.setValueAtTime(1320, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      } else if (type === 'select') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(600, now);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      } else if (type === 'finish') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.linearRampToValueAtTime(440, now + 0.5);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 1.0);
+        osc.start(now);
+        osc.stop(now + 1.0);
+      }
+    }
+
+    // ==========================================
+    // 入力処理
+    // ==========================================
+    window.addEventListener('keydown', (e) => {
+      if (!keyState[e.code]) {
+        handleKeyPress(e.code); 
+      }
+      keyState[e.code] = true;
+      lastInputTime = Date.now();
+    });
+
+    window.addEventListener('keyup', (e) => {
+      keyState[e.code] = false;
+    });
+
+    function toggleBrowserFullscreen() {
+      const root = document.documentElement;
+      if (!document.fullscreenElement) {
+        root.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    }
+
+    function handleKeyPress(code) {
+      if (code === 'KeyF') {
+        toggleBrowserFullscreen();
+        return;
+      }
+      if (state === 'TITLE') {
+        playSound('select');
+        if (code === 'ArrowUp' || code === 'KeyW') mode = 1;
+        if (code === 'ArrowDown' || code === 'KeyS') mode = 2;
+        if (code === 'Space' || code === 'Enter') startGame();
+      } else if (state === 'PLAYING') {
+        if (mode === 1) {
+          if (code === 'Space' || code === 'Enter') placeFlag(p1, 1);
+        } else {
+          if (code === 'Space') placeFlag(p1, 1);
+          if (code === 'Enter') placeFlag(p2, 2);
+        }
+      } else if (state === 'RESULT') {
+        if (Date.now() - stateStartTime > 2000) {
+          if (code === 'Space' || code === 'Enter') {
+            playSound('select');
+            state = 'TITLE';
+            lastInputTime = Date.now();
+          }
+        }
+      }
+    }
+
+    // ==========================================
+    // ゲームロジック
+    // ==========================================
+    function startGame() {
+      state = 'PLAYING';
+      stateStartTime = Date.now();
+      timeRemaining = CONFIG.GAME_TIME;
+      playSound('select');
+      
+      grid = [];
+      effectGrid = [];
+      flags1 = [];
+      flags2 = [];
+      for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
+        grid[y] = [];
+        effectGrid[y] = [];
+        for (let x = 0; x < CONFIG.GRID_COLS; x++) {
+          grid[y][x] = 0;
+          effectGrid[y][x] = 0;
+        }
+      }
+
+      // ルビー型エリア内に収まるように初期位置を調整
+      p1 = { x: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+      p2 = { x: 23 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+
+      cpuTarget = null;
+      cpuWaitTimer = 0;
+
+      calcScore();
+    }
+
+    function isValidPosition(px, py) {
+      const r = (CONFIG.PLAYER_SIZE / 2) - 2; 
+      const points = [
+        {x: px - r, y: py - r},
+        {x: px + r, y: py - r},
+        {x: px - r, y: py + r},
+        {x: px + r, y: py + r}
+      ];
+      for (let pt of points) {
+        const gx = Math.floor(pt.x / CONFIG.TILE_SIZE);
+        const gy = Math.floor(pt.y / CONFIG.TILE_SIZE);
+        if (gx < 0 || gx >= CONFIG.GRID_COLS || gy < 0 || gy >= CONFIG.GRID_ROWS) return false;
+        if (FIELD_MASK[gy][gx] === ' ') return false;
+      }
+      return true;
+    }
+
+    function clamp(val, min, max) {
+      return Math.max(min, Math.min(max, val));
+    }
+
+    function placeFlag(p, playerId) {
+      const gx = Math.floor(p.x / CONFIG.TILE_SIZE);
+      const gy = Math.floor(p.y / CONFIG.TILE_SIZE);
+      
+      if (gx < 0 || gx >= CONFIG.GRID_COLS || gy < 0 || gy >= CONFIG.GRID_ROWS) return;
+      if (FIELD_MASK[gy][gx] === ' ') return; 
+
+      const flags = playerId === 1 ? flags1 : flags2;
+      const existingIdx = flags.findIndex(f => f.gx === gx && f.gy === gy);
+
+      if (existingIdx !== -1) {
+        return; 
+      } else {
+        flags.push({gx, gy});
+        if (flags.length === 3) {
+          fillPolygon(playerId, flags);
+          if (playerId === 1) flags1 = []; else flags2 = [];
+          playSound('close');
+        } else {
+          playSound('flag');
+        }
+      }
+    }
+
+    function fillPolygon(playerId, flags) {
+      if (flags.length !== 3) return;
+
+      const [p0, p1, p2] = flags;
+      
+      const minX = Math.min(p0.gx, p1.gx, p2.gx);
+      const maxX = Math.max(p0.gx, p1.gx, p2.gx);
+      const minY = Math.min(p0.gy, p1.gy, p2.gy);
+      const maxY = Math.max(p0.gy, p1.gy, p2.gy);
+
+      let filledCount = 0;
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          if (FIELD_MASK[y] && FIELD_MASK[y][x] === ' ') continue;
+
+          if (isPointInTriangle(x, y, p0.gx, p0.gy, p1.gx, p1.gy, p2.gx, p2.gy)) {
+            if (grid[y][x] !== playerId) {
+              grid[y][x] = playerId;
+              effectGrid[y][x] = Date.now();
+              filledCount++;
+            }
+          }
+        }
+      }
+      if (filledCount > 0) {
+        calcScore();
+        playSound('paint');
+      }
+    }
+
+    function isPointInTriangle(px, py, x0, y0, x1, y1, x2, y2) {
+      const d = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2);
+      if (d === 0) {
+        return (px === x0 && py === y0) || (px === x1 && py === y1) || (px === x2 && py === y2);
+      }
+      const a = ((y1 - y2) * (px - x2) + (x2 - x1) * (py - y2)) / d;
+      const b = ((y2 - y0) * (px - x2) + (x0 - x2) * (py - y2)) / d;
+      const c = 1 - a - b;
+      const eps = -0.01;
+      return a >= eps && b >= eps && c >= eps;
+    }
+
+    function calcScore() {
+      p1Score = 0;
+      p2Score = 0;
+      for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
+        for (let x = 0; x < CONFIG.GRID_COLS; x++) {
+          if (FIELD_MASK[y][x] === ' ') continue;
+          if (grid[y][x] === 1) p1Score++;
+          if (grid[y][x] === 2) p2Score++;
+        }
+      }
+    }
+
+    function update(dt) {
+      if (state === 'TITLE') {
+        const idleTime = (Date.now() - lastInputTime) / 1000;
+        if (idleTime >= CONFIG.AUTO_START_SEC) {
+          mode = 1;
+          startGame();
+        }
+      } else if (state === 'PLAYING') {
+        timeRemaining -= dt;
+        if (timeRemaining <= 0) {
+          timeRemaining = 0;
+          state = 'RESULT';
+          stateStartTime = Date.now();
+          playSound('finish');
+          return;
+        }
+
+        const currentSpeed = timeRemaining <= CONFIG.RUSH_TIME 
+          ? CONFIG.BASE_SPEED * CONFIG.SPEED_UP_MULTIPLIER 
+          : CONFIG.BASE_SPEED;
+
+        // P1の移動処理
+        let dx1 = 0, dy1 = 0;
+        if (keyState['KeyW'] || (mode === 1 && keyState['ArrowUp'])) dy1 -= 1;
+        if (keyState['KeyS'] || (mode === 1 && keyState['ArrowDown'])) dy1 += 1;
+        if (keyState['KeyA'] || (mode === 1 && keyState['ArrowLeft'])) dx1 -= 1;
+        if (keyState['KeyD'] || (mode === 1 && keyState['ArrowRight'])) dx1 += 1;
+
+        if (dx1 !== 0 || dy1 !== 0) {
+          const len = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+          const nextX = p1.x + (dx1 / len) * currentSpeed * dt;
+          const nextY = p1.y + (dy1 / len) * currentSpeed * dt;
+          
+          if (isValidPosition(nextX, p1.y)) p1.x = nextX;
+          if (isValidPosition(p1.x, nextY)) p1.y = nextY;
+        }
+
+        // P2/CPUの移動処理
+        if (mode === 2) {
+          let dx2 = 0, dy2 = 0;
+          if (keyState['ArrowUp']) dy2 -= 1;
+          if (keyState['ArrowDown']) dy2 += 1;
+          if (keyState['ArrowLeft']) dx2 -= 1;
+          if (keyState['ArrowRight']) dx2 += 1;
+
+          if (dx2 !== 0 || dy2 !== 0) {
+            const len = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+            const nextX = p2.x + (dx2 / len) * currentSpeed * dt;
+            const nextY = p2.y + (dy2 / len) * currentSpeed * dt;
+            
+            if (isValidPosition(nextX, p2.y)) p2.x = nextX;
+            if (isValidPosition(p2.x, nextY)) p2.y = nextY;
+          }
+        } else if (mode === 1) {
+          // ★ CPU制御ロジック
+          if (cpuWaitTimer > 0) {
+            cpuWaitTimer -= dt;
+          } else {
+            if (!cpuTarget) {
+              let targetTiles = [];
+              for(let y=0; y<CONFIG.GRID_ROWS; y++) {
+                for(let x=0; x<CONFIG.GRID_COLS; x++) {
+                  if(FIELD_MASK[y][x] !== ' ' && grid[y][x] !== 2) {
+                    // ★ キャラクターが確実に到達できる安全なマスだけをターゲットにする
+                    const tx = x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+                    const ty = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+                    if (isValidPosition(tx, ty)) {
+                      targetTiles.push({x: tx, y: ty});
+                    }
+                  }
+                }
+              }
+              if (targetTiles.length > 0) {
+                const targetTile = targetTiles[Math.floor(Math.random() * targetTiles.length)];
+                cpuTarget = {
+                  x: targetTile.x,
+                  y: targetTile.y
+                };
+              }
+            }
+
+            if (cpuTarget) {
+              let dx2 = cpuTarget.x - p2.x;
+              let dy2 = cpuTarget.y - p2.y;
+              const dist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+              const cpuSpeed = currentSpeed * CONFIG.CPU_SPEED_MULTIPLIER;
+
+              // ★ 到達判定を少し緩くして(5px以内)、ミリ単位のスタックを防止
+              if (dist < cpuSpeed * dt || dist < 5) {
+                p2.x = cpuTarget.x;
+                p2.y = cpuTarget.y;
+                placeFlag(p2, 2);
+                cpuTarget = null;
+                cpuWaitTimer = 0.1 + Math.random() * 0.2;
+              } else {
+                const nextX = p2.x + (dx2 / dist) * cpuSpeed * dt;
+                const nextY = p2.y + (dy2 / dist) * cpuSpeed * dt;
+                
+                let movedX = false;
+                let movedY = false;
+
+                if (isValidPosition(nextX, p2.y)) {
+                  p2.x = nextX;
+                  movedX = true;
+                }
+                if (isValidPosition(p2.x, nextY)) {
+                  p2.y = nextY;
+                  movedY = true;
+                }
+                
+                // ★ CPUが壁に引っかかって完全にスタックした場合はターゲットを取り直す
+                if (!movedX && !movedY) {
+                   cpuTarget = null;
+                   cpuWaitTimer = 0.3; // 少し休んでから再考
+                   // 壁へのめり込みを解消するため、少しだけ中央に弾き戻す
+                   p2.x += (FIELD_WIDTH / 2 - p2.x) * 0.05;
+                   p2.y += (FIELD_HEIGHT / 2 - p2.y) * 0.05;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // ==========================================
+    // 描画処理
+    // ==========================================
+    function draw() {
+      ctx.fillStyle = CONFIG.COLORS.bg;
+      ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+
+      if (state === 'TITLE') {
+        drawTitle();
+      } else if (state === 'PLAYING' || state === 'RESULT') {
+        drawField();
+        drawUI();
+        if (state === 'RESULT') drawResult();
+      }
+    }
+
+    function drawField() {
+      ctx.save();
+      ctx.translate(OFFSET_X, OFFSET_Y);
+      
+      const now = Date.now();
+
+      // タイル描画（背景ロゴ処理を削除し、色塗りつぶしのみに変更）
+      for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
+        for (let x = 0; x < CONFIG.GRID_COLS; x++) {
+          if (FIELD_MASK[y][x] === ' ') continue;
+
+          const owner = grid[y][x];
+          const px = x * CONFIG.TILE_SIZE;
+          const py = y * CONFIG.TILE_SIZE;
+
+          if (owner === 0) {
+            ctx.fillStyle = CONFIG.COLORS.fieldBg;
+            ctx.fillRect(px, py, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
+            ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(px, py, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
+          } else {
+            const playerColor = owner === 1 ? CONFIG.COLORS.p1.tile : CONFIG.COLORS.p2.tile;
+            ctx.fillStyle = playerColor;
+            ctx.fillRect(px, py, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(px, py, CONFIG.TILE_SIZE, CONFIG.TILE_SIZE);
+          }
+
+          if (effectGrid[y][x]) {
+            const elapsed = now - effectGrid[y][x];
+            if (elapsed < 100) {
+              const scale = 1.2 - (elapsed / 100) * 0.2;
+              const size = CONFIG.TILE_SIZE * scale;
+              const offset = (CONFIG.TILE_SIZE - size) / 2;
+              ctx.fillStyle = CONFIG.COLORS.highlight;
+              ctx.fillRect(px + offset, py + offset, size, size);
+            } else {
+              effectGrid[y][x] = 0;
+            }
+          }
+        }
+      }
+
+      // ルビー型（マスクの境界）に沿って外枠線を描画
+      ctx.strokeStyle = CONFIG.COLORS.ui;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
+        for (let x = 0; x < CONFIG.GRID_COLS; x++) {
+          if (FIELD_MASK[y][x] === ' ') continue;
+          
+          const px = x * CONFIG.TILE_SIZE;
+          const py = y * CONFIG.TILE_SIZE;
+          
+          if (y === 0 || FIELD_MASK[y-1][x] === ' ') {
+            ctx.moveTo(px, py); ctx.lineTo(px + CONFIG.TILE_SIZE, py);
+          }
+          if (y === CONFIG.GRID_ROWS - 1 || FIELD_MASK[y+1][x] === ' ') {
+            ctx.moveTo(px, py + CONFIG.TILE_SIZE); ctx.lineTo(px + CONFIG.TILE_SIZE, py + CONFIG.TILE_SIZE);
+          }
+          if (x === 0 || FIELD_MASK[y][x-1] === ' ') {
+            ctx.moveTo(px, py); ctx.lineTo(px, py + CONFIG.TILE_SIZE);
+          }
+          if (x === CONFIG.GRID_COLS - 1 || FIELD_MASK[y][x+1] === ' ') {
+            ctx.moveTo(px + CONFIG.TILE_SIZE, py); ctx.lineTo(px + CONFIG.TILE_SIZE, py + CONFIG.TILE_SIZE);
+          }
+        }
+      }
+      ctx.stroke();
+
+      drawFlags(flags1, CONFIG.COLORS.p1.player);
+      drawFlags(flags2, CONFIG.COLORS.p2.player);
+
+      drawPlayer(p1, CONFIG.COLORS.p1.player, false);
+      drawPlayer(p2, CONFIG.COLORS.p2.player, true);
+
+      ctx.restore();
+    }
+
+    function drawFlags(flags, color) {
+      if (flags.length === 0) return;
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      
+      for (let i = 0; i < flags.length; i++) {
+        const cx = flags[i].gx * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        const cy = flags[i].gy * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+        
+        if (i === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+        
+        ctx.fillStyle = CONFIG.COLORS.ui;
+        ctx.fillRect(cx - 3, cy - 3, 6, 6);
+        ctx.fillStyle = color;
+        ctx.fillRect(cx - 2, cy - 2, 4, 4);
+      }
+      ctx.stroke();
+
+      const startCx = flags[0].gx * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+      const startCy = flags[0].gy * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+      ctx.strokeStyle = CONFIG.COLORS.highlight;
+      ctx.lineWidth = 1;
+      ctx.strokeRect(startCx - 4, startCy - 4, 8, 8);
+    }
+
+    function drawPlayer(p, color, isP2) {
+      const pixelSize = 1.2; 
+      const w = 32 * pixelSize; 
+      const h = 30 * pixelSize; 
+      
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      
+      const bounce = Math.sin(Date.now() / 150) * 2;
+      ctx.translate(0, bounce);
+
+      if (isP2) {
+        ctx.scale(-1, 1);
+      }
+
+      ctx.translate(-w / 2, -h / 2);
+
+      for (let y = 0; y < PLAYER_SPRITE.length; y++) {
+        const row = PLAYER_SPRITE[y];
+        for (let x = 0; x < row.length; x++) {
+          const char = row[x];
+          if (char === ' ') continue;
+          
+          let fillCol = color;
+          let overlayCol = null;
+
+          if (char === '0') { fillCol = '#1f1f2e'; } 
+          else if (char === '1') { fillCol = color; overlayCol = 'rgba(0, 0, 0, 0.35)'; } 
+          else if (char === '2') { fillCol = color; } 
+          else if (char === '3') { fillCol = color; overlayCol = 'rgba(255, 255, 255, 0.4)'; } 
+          else if (char === '4') { fillCol = '#ffffff'; } 
+          else if (char === '5') { fillCol = '#2a2a35'; } 
+          else if (char === '6') { fillCol = '#2a2a35'; } 
+          else if (char === '7') { fillCol = '#e65c5c'; } 
+          
+          ctx.fillStyle = fillCol;
+          ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          
+          if (overlayCol) {
+            ctx.fillStyle = overlayCol;
+            ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+          }
+        }
+      }
+      
+      ctx.restore();
+    }
+
+    function drawUI() {
+      ctx.fillStyle = CONFIG.COLORS.ui;
+      ctx.textBaseline = 'middle';
+
+      let timerColor = CONFIG.COLORS.ui;
+      if (timeRemaining <= CONFIG.RUSH_TIME && Math.floor(Date.now() / 100) % 2 === 0) {
+        timerColor = CONFIG.COLORS.p1.tile;
+      }
+
+      ctx.fillStyle = timerColor;
+      ctx.textAlign = 'center';
+      ctx.font = '32px "Press Start 2P", monospace';
+      ctx.fillText(Math.ceil(timeRemaining).toString().padStart(2, '0'), CONFIG.WIDTH / 2, 45);
+
+      const scoreY = 85;
+      
+      ctx.fillStyle = CONFIG.COLORS.p1.tile;
+      ctx.textAlign = 'left';
+      ctx.font = '20px "Press Start 2P", monospace';
+      ctx.fillText(`P1:${p1Score.toString().padStart(3, '0')}`, OFFSET_X, scoreY);
+      
+      ctx.fillStyle = CONFIG.COLORS.p2.tile;
+      ctx.textAlign = 'right';
+      const p2Label = mode === 1 ? 'CPU' : 'P2';
+      ctx.fillText(`${p2Label}:${p2Score.toString().padStart(3, '0')}`, OFFSET_X + FIELD_WIDTH, scoreY);
+
+      ctx.fillStyle = '#ffaaaa';
+      ctx.textAlign = 'center';
+      ctx.font = '12px "Press Start 2P", monospace';
+      ctx.fillText("PLACE 3 FLAGS TO CAPTURE!", CONFIG.WIDTH / 2, OFFSET_Y + FIELD_HEIGHT + 30);
+    }
+
+    function drawTitle() {
+      if (titleLogoImg && titleLogoImg.complete && titleLogoImg.naturalWidth > 0) {
+        const lw = titleLogoImg.width;
+        const lh = titleLogoImg.height;
+        ctx.drawImage(titleLogoImg, CONFIG.WIDTH / 2 - lw / 2, 80);
+      } else {
+        const tx = CONFIG.WIDTH / 2;
+        const ty = 140;
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const subTy = ty - 80;
+        ctx.strokeStyle = '#ff7bb2';
+        ctx.lineWidth = 4;
+        
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(tx - 120, subTy - 25, 240, 44, 10);
+        } else {
+          ctx.rect(tx - 120, subTy - 25, 240, 44);
+        }
+        ctx.stroke();
+
+        ctx.font = '24px "Press Start 2P", monospace';
+        ctx.fillStyle = '#ff7bb2';
+        ctx.fillText("JUGGING", tx, subTy + 4); 
+        ctx.fillStyle = '#7ba6ff';
+        ctx.fillText("JUGGING", tx, subTy);     
+
+        const titleText = "RUBYFIGHT";
+        ctx.font = '64px "Press Start 2P", monospace';
+
+        ctx.lineWidth = 14;
+        ctx.strokeStyle = '#000000';
+        ctx.lineJoin = 'round';
+        ctx.strokeText(titleText, tx, ty + 6);
+        ctx.fillText(titleText, tx, ty + 6);
+        ctx.strokeText(titleText, tx, ty);
+
+        ctx.fillStyle = '#f28322';
+        ctx.fillText(titleText, tx, ty);
+
+        ctx.fillStyle = '#ffb36c';
+        ctx.fillText(titleText, tx - 3, ty - 3);
+
+        ctx.fillStyle = '#f28322';
+        ctx.fillText(titleText, tx, ty + 2);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '16px "Press Start 2P", monospace';
+        ctx.fillText("TM", tx + 280, ty - 40);
+      }
+
+      ctx.font = '20px "Press Start 2P", monospace';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = CONFIG.COLORS.ui;
+      const m1 = mode === 1 ? "> 1P VS CPU" : "  1P VS CPU";
+      const m2 = mode === 2 ? "> 1P VS 2P " : "  1P VS 2P ";
+      
+      const menuX = 200;
+      ctx.fillText(m1, menuX, 260);
+      ctx.fillText(m2, menuX, 310);
+
+      const idleSec = Math.max(0, CONFIG.AUTO_START_SEC - Math.floor((Date.now() - lastInputTime) / 1000));
+      ctx.textAlign = 'center';
+      ctx.font = '12px "Press Start 2P", monospace';
+      ctx.fillStyle = '#ffaaaa';
+      ctx.fillText(`AUTO START IN ${idleSec} SEC`, CONFIG.WIDTH / 2, 470);
+      
+      ctx.fillStyle = CONFIG.COLORS.ui;
+      ctx.fillText("- CONTROLS -", CONFIG.WIDTH / 2, 360);
+      if (mode === 1) {
+        ctx.fillText("P1: WASD or ARROWS + SPACE", CONFIG.WIDTH / 2, 390);
+      } else {
+        ctx.fillText("P1: WASD+SPACE", CONFIG.WIDTH / 2, 390);
+        ctx.fillText("P2: ARROWS+ENTER", CONFIG.WIDTH / 2, 410);
+      }
+      ctx.fillText("F: BROWSER FULLSCREEN", CONFIG.WIDTH / 2, 430);
+    }
+
+    function drawResult() {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+
+      ctx.textAlign = 'center';
+      ctx.font = '48px "Press Start 2P", monospace';
+      ctx.fillStyle = CONFIG.COLORS.ui;
+      ctx.fillText("TIME UP!", CONFIG.WIDTH / 2, 180);
+
+      ctx.font = '32px "Press Start 2P", monospace';
+      let msg = "";
+      if (p1Score > p2Score) {
+        msg = "P1 WINS!";
+        ctx.fillStyle = CONFIG.COLORS.p1.tile;
+      } else if (p2Score > p1Score) {
+        msg = mode === 1 ? "CPU WINS!" : "P2 WINS!";
+        ctx.fillStyle = CONFIG.COLORS.p2.tile;
+      } else {
+        msg = "DRAW!";
+        ctx.fillStyle = CONFIG.COLORS.ui;
+      }
+      ctx.fillText(msg, CONFIG.WIDTH / 2, 260);
+
+      if (Date.now() - stateStartTime > 2000) {
+        ctx.font = '16px "Press Start 2P", monospace';
+        ctx.fillStyle = (Math.floor(Date.now() / 500) % 2 === 0) ? CONFIG.COLORS.ui : '#ffaaaa';
+        ctx.fillText("PRESS SPACE TO RETURN", CONFIG.WIDTH / 2, 360);
+      }
+    }
+
+    // ==========================================
+    // メインループ
+    // ==========================================
+    function gameLoop(now) {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+      update(dt);
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.fonts.ready.then(() => {
+      initAssets(() => {
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+      });
+    });
+
+  </script>
+</body>
+</html>
