@@ -24704,9 +24704,15 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
   function $rb_times(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs * rhs : lhs['$*'](rhs);
   }
+  function $rb_divide(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs / rhs : lhs['$/'](rhs);
+  }
+  function $rb_minus(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
+  }
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $hash2 = Opal.hash2;
 
-  Opal.add_stubs(['$*', '$[]', '$to_browser_hash']);
+  Opal.add_stubs(['$*', '$/', '$-', '$[]', '$to_browser_hash']);
   return (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
@@ -24719,19 +24725,27 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
 
       
       Opal.defs(self, '$to_browser_hash', $GameConfig_to_browser_hash$1 = function $$to_browser_hash() {
-        var self = this;
+        var self = this, width = nil, height = nil, tile = nil, grid_cols = nil, grid_rows = nil, field_w = nil, field_h = nil;
 
-        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "COLORS", "GAME_TIME", "RUSH_TIME", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "ASSET_SHEET", "OFFSET_Y"], {"WIDTH": 960, "HEIGHT": 540, "TILE_SIZE": 20, "GRID_COLS": 32, "GRID_ROWS": 18, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.3, "CPU_SPEED_MULTIPLIER": 1.15, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 60, "RUSH_TIME": 10, "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "fps", "frameStart", "frameCount", "removeEdgeBlack", "keyMaxRgb"], {"url": "assets/title/char_red_sheet.png", "cols": 4, "rows": 4, "fps": 6, "frameStart": 0, "frameCount": 16, "removeEdgeBlack": true, "keyMaxRgb": 32}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "fps", "frameStart", "frameCount", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin", "keyMaxRgb"], {"url": "assets/title/char_blue_sheet.png", "cols": 4, "rows": 4, "fps": 6, "frameStart": 0, "frameCount": 16, "removeEdgeBlack": false, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45, "keyMaxRgb": 32}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "OFFSET_Y": 110})
+        
+        width = 960;
+        height = 540;
+        tile = 20;
+        grid_cols = 32;
+        grid_rows = 18;
+        field_w = $rb_times(tile, grid_cols);
+        field_h = $rb_times(tile, grid_rows);
+        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "COLORS", "GAME_TIME", "RUSH_TIME", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.3, "CPU_SPEED_MULTIPLIER": 1.15, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 60, "RUSH_TIME": 10, "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "fps", "frameStart", "frameCount", "removeEdgeBlack", "keyMaxRgb"], {"url": "assets/title/char_red_sheet.png", "cols": 4, "rows": 4, "fps": 6, "frameStart": 0, "frameCount": 16, "removeEdgeBlack": true, "keyMaxRgb": 32}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "fps", "frameStart", "frameCount", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin", "keyMaxRgb"], {"url": "assets/title/char_blue_sheet.png", "cols": 4, "rows": 4, "fps": 6, "frameStart": 0, "frameCount": 16, "removeEdgeBlack": false, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45, "keyMaxRgb": 32}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
       }, $GameConfig_to_browser_hash$1.$$arity = 0);
       Opal.defs(self, '$field_width', $GameConfig_field_width$2 = function $$field_width() {
         var self = this;
 
-        return $rb_times(self.$to_browser_hash()['$[]']("TILE_SIZE"), self.$to_browser_hash()['$[]']("GRID_COLS"))
+        return self.$to_browser_hash()['$[]']("FIELD_WIDTH")
       }, $GameConfig_field_width$2.$$arity = 0);
       Opal.defs(self, '$field_height', $GameConfig_field_height$3 = function $$field_height() {
         var self = this;
 
-        return $rb_times(self.$to_browser_hash()['$[]']("TILE_SIZE"), self.$to_browser_hash()['$[]']("GRID_ROWS"))
+        return self.$to_browser_hash()['$[]']("FIELD_HEIGHT")
       }, $GameConfig_field_height$3.$$arity = 0);
     })($nesting[0], $nesting)
   })($nesting[0], $nesting)
@@ -24807,6 +24821,105 @@ Opal.modules["rubyfight/field_mask"] = function(Opal) {
 };
 
 /* Generated by Opal 1.1.1 */
+Opal.modules["rubyfight/layout"] = function(Opal) {
+  function $rb_divide(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs / rhs : lhs['$/'](rhs);
+  }
+  function $rb_plus(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs + rhs : lhs['$+'](rhs);
+  }
+  function $rb_times(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs * rhs : lhs['$*'](rhs);
+  }
+  function $rb_ge(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs >= rhs : lhs['$>='](rhs);
+  }
+  function $rb_lt(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs < rhs : lhs['$<'](rhs);
+  }
+  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy;
+
+  Opal.add_stubs(['$freeze', '$to_browser_hash', '$[]', '$cfg', '$tile_size', '$floor', '$/', '$to_f', '$+', '$*', '$>=', '$<', '$grid_cols', '$grid_rows', '$==', '$grid_to_tile_center']);
+  return (function($base, $parent_nesting) {
+    var self = $module($base, 'Rubyfight');
+
+    var $nesting = [self].concat($parent_nesting);
+
+    (function($base, $parent_nesting) {
+      var self = $module($base, 'Layout');
+
+      var $nesting = [self].concat($parent_nesting), $Layout_cfg$1, $Layout_tile_size$2, $Layout_grid_cols$3, $Layout_grid_rows$4, $Layout_pixel_to_grid$5, $Layout_grid_to_tile_center$6, $Layout_in_grid$ques$7, $Layout_default_spawn$8;
+
+      
+      Opal.const_set($nesting[0], 'P1_SPAWN_GRID', [8, 8].$freeze());
+      Opal.const_set($nesting[0], 'P2_SPAWN_GRID', [23, 8].$freeze());
+      Opal.defs(self, '$cfg', $Layout_cfg$1 = function $$cfg() {
+        var self = this;
+
+        return $$($nesting, 'GameConfig').$to_browser_hash()
+      }, $Layout_cfg$1.$$arity = 0);
+      Opal.defs(self, '$tile_size', $Layout_tile_size$2 = function $$tile_size() {
+        var self = this;
+
+        return self.$cfg()['$[]']("TILE_SIZE")
+      }, $Layout_tile_size$2.$$arity = 0);
+      Opal.defs(self, '$grid_cols', $Layout_grid_cols$3 = function $$grid_cols() {
+        var self = this;
+
+        return self.$cfg()['$[]']("GRID_COLS")
+      }, $Layout_grid_cols$3.$$arity = 0);
+      Opal.defs(self, '$grid_rows', $Layout_grid_rows$4 = function $$grid_rows() {
+        var self = this;
+
+        return self.$cfg()['$[]']("GRID_ROWS")
+      }, $Layout_grid_rows$4.$$arity = 0);
+      Opal.defs(self, '$pixel_to_grid', $Layout_pixel_to_grid$5 = function $$pixel_to_grid(px, py) {
+        var self = this, ts = nil;
+
+        
+        ts = self.$tile_size();
+        return [$rb_divide(px.$to_f(), ts).$floor(), $rb_divide(py.$to_f(), ts).$floor()];
+      }, $Layout_pixel_to_grid$5.$$arity = 2);
+      Opal.defs(self, '$grid_to_tile_center', $Layout_grid_to_tile_center$6 = function $$grid_to_tile_center(gx, gy) {
+        var self = this, ts = nil;
+
+        
+        ts = self.$tile_size();
+        return [$rb_plus($rb_times(gx, ts), $rb_divide(ts, 2.0)), $rb_plus($rb_times(gy, ts), $rb_divide(ts, 2.0))];
+      }, $Layout_grid_to_tile_center$6.$$arity = 2);
+      Opal.defs(self, '$in_grid?', $Layout_in_grid$ques$7 = function(gx, gy) {
+        var self = this, $ret_or_1 = nil, $ret_or_2 = nil, $ret_or_3 = nil;
+
+        if ($truthy(($ret_or_1 = (function() {if ($truthy(($ret_or_2 = (function() {if ($truthy(($ret_or_3 = $rb_ge(gx, 0)))) {
+          return $rb_lt(gx, self.$grid_cols())
+        } else {
+          return $ret_or_3
+        }; return nil; })()))) {
+          return $rb_ge(gy, 0)
+        } else {
+          return $ret_or_2
+        }; return nil; })()))) {
+          return $rb_lt(gy, self.$grid_rows())
+        } else {
+          return $ret_or_1
+        }
+      }, $Layout_in_grid$ques$7.$$arity = 2);
+      Opal.defs(self, '$default_spawn', $Layout_default_spawn$8 = function $$default_spawn(which) {
+        var $a, $b, self = this, gx = nil, gy = nil;
+
+        
+        $b = (function() {if (which['$==']("p1")) {
+          return $$($nesting, 'P1_SPAWN_GRID')
+        } else {
+          return $$($nesting, 'P2_SPAWN_GRID')
+        }; return nil; })(), $a = Opal.to_ary($b), (gx = ($a[0] == null ? nil : $a[0])), (gy = ($a[1] == null ? nil : $a[1])), $b;
+        return self.$grid_to_tile_center(gx, gy);
+      }, $Layout_default_spawn$8.$$arity = 1);
+    })($nesting[0], $nesting)
+  })($nesting[0], $nesting)
+};
+
+/* Generated by Opal 1.1.1 */
 (function(Opal) {
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module;
 
@@ -24817,6 +24930,7 @@ Opal.modules["rubyfight/field_mask"] = function(Opal) {
   self.$require("rubyfight/version");
   self.$require("rubyfight/game_config");
   self.$require("rubyfight/field_mask");
+  self.$require("rubyfight/layout");
   (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 

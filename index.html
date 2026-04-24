@@ -1758,6 +1758,18 @@
             return;
           }
         }
+        var layoutCmp = {
+          FIELD_WIDTH: FIELD_WIDTH,
+          FIELD_HEIGHT: FIELD_HEIGHT,
+          OFFSET_X: OFFSET_X,
+          OFFSET_Y: OFFSET_Y
+        };
+        for (var lk in layoutCmp) {
+          if (layoutCmp[lk] !== rb[lk]) {
+            console.error('[RUBYFIGHT] Ruby/JS layout mismatch', lk, layoutCmp[lk], rb[lk]);
+            return;
+          }
+        }
         var fRaw = window.RUBYFIGHT_FIELD_MASK_JSON;
         var fm = parseJsonMaybeOpal(fRaw);
         if (!Array.isArray(fm) || fm.length !== FIELD_MASK.length) {

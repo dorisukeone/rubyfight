@@ -4,12 +4,19 @@ module Rubyfight
   module GameConfig
     # JS の CONFIG と同じキー（大文字）で JSON 化しやすくする
     def self.to_browser_hash
+      width = 960
+      height = 540
+      tile = 20
+      grid_cols = 32
+      grid_rows = 18
+      field_w = tile * grid_cols
+      field_h = tile * grid_rows
       {
-        'WIDTH' => 960,
-        'HEIGHT' => 540,
-        'TILE_SIZE' => 20,
-        'GRID_COLS' => 32,
-        'GRID_ROWS' => 18,
+        'WIDTH' => width,
+        'HEIGHT' => height,
+        'TILE_SIZE' => tile,
+        'GRID_COLS' => grid_cols,
+        'GRID_ROWS' => grid_rows,
         'PLAYER_SIZE' => 28,
         'BASE_SPEED' => 160,
         'SPEED_UP_MULTIPLIER' => 1.3,
@@ -76,17 +83,19 @@ module Rubyfight
             'uiRef' => [2, 1]
           }
         },
-        # レイアウト（JS では CONFIG 外の定数。整合チェック用）
+        'FIELD_WIDTH' => field_w,
+        'FIELD_HEIGHT' => field_h,
+        'OFFSET_X' => (width - field_w) / 2,
         'OFFSET_Y' => 110
       }
     end
 
     def self.field_width
-      to_browser_hash['TILE_SIZE'] * to_browser_hash['GRID_COLS']
+      to_browser_hash['FIELD_WIDTH']
     end
 
     def self.field_height
-      to_browser_hash['TILE_SIZE'] * to_browser_hash['GRID_ROWS']
+      to_browser_hash['FIELD_HEIGHT']
     end
   end
 end
