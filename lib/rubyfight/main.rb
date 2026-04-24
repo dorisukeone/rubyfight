@@ -8,6 +8,7 @@ require 'rubyfight/field_mask'
 require 'rubyfight/layout'
 require 'rubyfight/territory'
 require 'rubyfight/cpu'
+require 'rubyfight/game_state'
 
 module Rubyfight
   def self.boot_banner
@@ -85,10 +86,33 @@ module Rubyfight
       };
     }
   end
+
+  def self.attach_game_state_bridge!
+    g = GameState
+    %x{
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _gs = #{g};
+      window.RUBYFIGHT.gameStateTickPlaying = function(timeRemaining, delta) {
+        var a = _gs['$tick_playing'](timeRemaining, delta);
+        var ev = a[1];
+        return [a[0], (ev === Opal.nil || ev == null) ? null : ev];
+      };
+      window.RUBYFIGHT.gameStateCanAdvanceFromResult = function(nowMs, stateStartedMs) {
+        return _gs['$can_advance_from_result$ques'](nowMs, stateStartedMs);
+      };
+      window.RUBYFIGHT.gameStateMenuPrevIndex = function(index, menuSize) {
+        return _gs['$menu_prev_index'](index, menuSize);
+      };
+      window.RUBYFIGHT.gameStateMenuNextIndex = function(index, menuSize) {
+        return _gs['$menu_next_index'](index, menuSize);
+      };
+    }
+  end
 end
 
 Rubyfight.expose_to_browser!
 Rubyfight.attach_layout_bridge!
 Rubyfight.attach_territory_bridge!
 Rubyfight.attach_cpu_bridge!
+Rubyfight.attach_game_state_bridge!
 Rubyfight.announce!

@@ -975,12 +975,20 @@
           return;
         }
         if (code === 'ArrowUp' || code === 'KeyW') {
-          titleMenuIndex = (titleMenuIndex + 3) % 4;
+          if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateMenuPrevIndex === 'function') {
+            titleMenuIndex = window.RUBYFIGHT.gameStateMenuPrevIndex(titleMenuIndex, 4);
+          } else {
+            titleMenuIndex = (titleMenuIndex + 3) % 4;
+          }
           playSound('select');
           return;
         }
         if (code === 'ArrowDown' || code === 'KeyS') {
-          titleMenuIndex = (titleMenuIndex + 1) % 4;
+          if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateMenuNextIndex === 'function') {
+            titleMenuIndex = window.RUBYFIGHT.gameStateMenuNextIndex(titleMenuIndex, 4);
+          } else {
+            titleMenuIndex = (titleMenuIndex + 1) % 4;
+          }
           playSound('select');
           return;
         }
@@ -1008,7 +1016,13 @@
           if (code === 'Enter') placeFlag(p2, 2);
         }
       } else if (state === 'RESULT') {
-        if (Date.now() - stateStartTime > 2000) {
+        let canLeaveResult = false;
+        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateCanAdvanceFromResult === 'function') {
+          canLeaveResult = window.RUBYFIGHT.gameStateCanAdvanceFromResult(Date.now(), stateStartTime);
+        } else {
+          canLeaveResult = Date.now() - stateStartTime > 2000;
+        }
+        if (canLeaveResult) {
           if (code === 'Space' || code === 'Enter') {
             playSound('select');
             state = 'TITLE';
@@ -1206,13 +1220,24 @@
 
     function update(dt) {
       if (state === 'PLAYING') {
-        timeRemaining -= dt;
-        if (timeRemaining <= 0) {
-          timeRemaining = 0;
-          state = 'RESULT';
-          stateStartTime = Date.now();
-          playSound('finish');
-          return;
+        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateTickPlaying === 'function') {
+          const tick = window.RUBYFIGHT.gameStateTickPlaying(timeRemaining, dt);
+          timeRemaining = tick[0];
+          if (tick[1]) {
+            state = tick[1];
+            stateStartTime = Date.now();
+            playSound('finish');
+            return;
+          }
+        } else {
+          timeRemaining -= dt;
+          if (timeRemaining <= 0) {
+            timeRemaining = 0;
+            state = 'RESULT';
+            stateStartTime = Date.now();
+            playSound('finish');
+            return;
+          }
         }
 
         const currentSpeed = timeRemaining <= CONFIG.RUSH_TIME 
