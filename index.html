@@ -1735,5 +1735,46 @@
   </script>
   <!-- Ruby (Opal) コア: bundle exec rake opal:build で生成。DevTools コンソールにバナーが出る -->
   <script src="build/rubyfight.js"></script>
+  <script>
+    (function () {
+      function parseJsonMaybeOpal(val) {
+        if (val == null) return null;
+        if (typeof val === 'string') return JSON.parse(val);
+        if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+          var w = val.WIDTH;
+          if (typeof w === 'number') return val;
+        }
+        return JSON.parse(String(val));
+      }
+      try {
+        var raw = window.RUBYFIGHT_CONFIG_JSON;
+        if (raw == null) return;
+        var rb = parseJsonMaybeOpal(raw);
+        var keys = ['WIDTH', 'HEIGHT', 'TILE_SIZE', 'GRID_COLS', 'GRID_ROWS', 'GAME_TIME', 'RUSH_TIME'];
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          if (CONFIG[k] !== rb[k]) {
+            console.error('[RUBYFIGHT] Ruby/JS config mismatch', k, CONFIG[k], rb[k]);
+            return;
+          }
+        }
+        var fRaw = window.RUBYFIGHT_FIELD_MASK_JSON;
+        var fm = parseJsonMaybeOpal(fRaw);
+        if (!Array.isArray(fm) || fm.length !== FIELD_MASK.length) {
+          console.error('[RUBYFIGHT] FIELD_MASK length mismatch', fm && fm.length, FIELD_MASK.length);
+          return;
+        }
+        for (var r = 0; r < fm.length; r++) {
+          if (fm[r] !== FIELD_MASK[r]) {
+            console.error('[RUBYFIGHT] FIELD_MASK row mismatch', r);
+            return;
+          }
+        }
+        console.log('[RUBYFIGHT] Ruby↔JS CONFIG + FIELD_MASK OK');
+      } catch (e) {
+        console.warn('[RUBYFIGHT] Opal config verify failed', e);
+      }
+    })();
+  </script>
 </body>
 </html>

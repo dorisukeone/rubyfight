@@ -91,8 +91,10 @@ bundle exec rake opal:build
 
 依存が Canvas に少ない順に Ruby へ。
 
-- [ ] `CONFIG` 相当 → `Rubyfight::Config`（定数・ハッシュ）。
-- [ ] フィールドマスク・タイル座標 → `Field` / `Grid`。
+- [x] `CONFIG` 相当 → `Rubyfight::GameConfig.to_browser_hash`（`lib/rubyfight/game_config.rb`）。`index.html` の CONFIG と手で同期（将来は JS から削除）。
+- [x] フィールドマスク → `Rubyfight::FieldMask::ROWS`（`lib/rubyfight/field_mask.rb`）。
+- [x] Minitest（`bundle exec rake test`）＋ Opal から `window.RUBYFIGHT_*_JSON` 公開＋`index.html` で突合ログ。
+- [ ] フィールドマスクを使った座標ユーティリティ → `Field` / `Grid`（次）。
 - [ ] フラグ配置・勢力範囲・スコア計算 → `Territory`（既存アルゴリズムをメソッド分割）。
 - [ ] CPU 行動 → `CpuController`（乱数・タイマーは注入可能にするとテストしやすい）。
 - [ ] **単体テスト**（`minitest` / `rspec`）：`bundle exec rake test` でロジックのみ検証可能に。

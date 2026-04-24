@@ -1,7 +1,13 @@
 require 'opal/builder'
 require 'opal/builder_processors'
+require 'rake/testtask'
 
 directory 'build'
+
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'lib'
+  t.test_files = FileList['test/**/*_test.rb']
+end
 
 desc 'Opal: lib/rubyfight を 1 ファイルにバンドル → build/rubyfight.js'
 task 'opal:build' => ['build'] do
@@ -15,4 +21,4 @@ task 'opal:build' => ['build'] do
   puts "Wrote #{out} (#{compiled.bytesize} bytes)"
 end
 
-task default: 'opal:build'
+task default: %i[test opal:build]
