@@ -6,6 +6,7 @@ require 'rubyfight/version'
 require 'rubyfight/game_config'
 require 'rubyfight/field_mask'
 require 'rubyfight/layout'
+require 'rubyfight/territory'
 
 module Rubyfight
   def self.boot_banner

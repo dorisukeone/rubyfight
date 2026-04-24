@@ -95,7 +95,8 @@ bundle exec rake opal:build
 - [x] フィールドマスク → `Rubyfight::FieldMask::ROWS`（`lib/rubyfight/field_mask.rb`）。
 - [x] Minitest（`bundle exec rake test`）＋ Opal から `window.RUBYFIGHT_*_JSON` 公開＋`index.html` で突合ログ。
 - [x] レイアウト・座標 → `Rubyfight::Layout`（`pixel_to_grid` / `grid_to_tile_center` / 初期スポーン）。`GameConfig` に `FIELD_WIDTH` 等を含め JS 定数と突合。
-- [ ] 領土・スコア・三角形判定などゲームルール本体（次）。
+- [x] 領土・スコア・三角形判定 → `Rubyfight::Territory`（`point_in_triangle?` / `fill_triangle!` / `calc_scores` / `push_flag`）。
+- [ ] 上記を `index.html` から呼び出しに差し替え、CPU・入力はその次。
 - [ ] フラグ配置・勢力範囲・スコア計算 → `Territory`（既存アルゴリズムをメソッド分割）。
 - [ ] CPU 行動 → `CpuController`（乱数・タイマーは注入可能にするとテストしやすい）。
 - [ ] **単体テスト**（`minitest` / `rspec`）：`bundle exec rake test` でロジックのみ検証可能に。
