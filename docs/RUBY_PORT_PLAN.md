@@ -72,11 +72,20 @@ rubyfight/
 
 ### Phase 0 — ブランチ・ビルドの骨格（1〜2 日）
 
-- [ ] 本ブランチ `feat/ruby-port-opal` で作業。
-- [ ] `Gemfile` に `opal`（バージョン固定）。
-- [ ] `Rakefile`: `opal:build` で `build/rubyfight.js` を生成。
-- [ ] 最小の `lib/rubyfight/main.rb`（`puts` 相当 → ブラウザでは `console.log`）で **一度デプロイパイプを通す**。
-- [ ] `index.html` を「ビルド済み JS を読むだけ」に差し替え（既存ロジックはまだ残してもよいが、重複回避のため早期に切り離す方針を決める）。
+- [x] 本ブランチ `feat/ruby-port-opal` で作業。
+- [x] `Gemfile` に `opal`（`parser` を `3.2.2.0` にピン留め: macOS 同梱 Ruby 2.6 で `racc` ext を避ける）。
+- [x] `Rakefile`: `rake opal:build` → `build/rubyfight.js`。
+- [x] `lib/rubyfight/main.rb` で `require 'opal'` ＋ `puts` バナー（ブラウザコンソールに表示）。
+- [x] `index.html` が `build/rubyfight.js` を読み込み（ゲーム本体 JS は当面そのまま併存）。
+
+**ビルド手順**
+
+```bash
+bundle install --path vendor/bundle
+bundle exec rake opal:build
+```
+
+`build/rubyfight.js` は配信のためコミット可（Firebase 等で `bundle` 不要にするため）。`vendor/bundle` は `.gitignore`。
 
 ### Phase 1 — データと純粋ロジックの移植（2〜4 日）
 

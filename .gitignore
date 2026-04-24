@@ -4,3 +4,7 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 *.local
+
+# Bundler（ローカルビルド用。build/rubyfight.js は配信用にコミットする想定）
+/vendor/bundle/
+/.bundle/

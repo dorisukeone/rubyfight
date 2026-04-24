@@ -1,0 +1,9 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+# parser 3.3+ は racc のネイティブ ext 依存で、macOS 同梱 Ruby 2.6 ではビルド失敗しやすい。
+gem 'parser', '3.2.2.0'
+# 古いシステム Ruby 向け。Ruby 3.x 環境では opal を 1.7+ に上げ、parser の上限を外すこと。
+gem 'opal', '~> 1.1.1'
+gem 'rake', '~> 13.0'
