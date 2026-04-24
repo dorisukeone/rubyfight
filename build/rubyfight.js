@@ -24837,9 +24837,12 @@ Opal.modules["rubyfight/layout"] = function(Opal) {
   function $rb_lt(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs < rhs : lhs['$<'](rhs);
   }
-  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy;
+  function $rb_minus(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
+  }
+  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy, $send = Opal.send;
 
-  Opal.add_stubs(['$freeze', '$to_browser_hash', '$[]', '$cfg', '$tile_size', '$floor', '$/', '$to_f', '$+', '$*', '$>=', '$<', '$grid_cols', '$grid_rows', '$==', '$grid_to_tile_center']);
+  Opal.add_stubs(['$freeze', '$to_browser_hash', '$[]', '$cfg', '$tile_size', '$floor', '$/', '$to_f', '$+', '$*', '$>=', '$<', '$grid_cols', '$grid_rows', '$to_i', '$-', '$all?', '$nil?', '$==', '$grid_to_tile_center']);
   return (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
@@ -24848,7 +24851,7 @@ Opal.modules["rubyfight/layout"] = function(Opal) {
     (function($base, $parent_nesting) {
       var self = $module($base, 'Layout');
 
-      var $nesting = [self].concat($parent_nesting), $Layout_cfg$1, $Layout_tile_size$2, $Layout_grid_cols$3, $Layout_grid_rows$4, $Layout_pixel_to_grid$5, $Layout_grid_to_tile_center$6, $Layout_in_grid$ques$7, $Layout_default_spawn$8;
+      var $nesting = [self].concat($parent_nesting), $Layout_cfg$1, $Layout_tile_size$2, $Layout_grid_cols$3, $Layout_grid_rows$4, $Layout_pixel_to_grid$5, $Layout_grid_to_tile_center$6, $Layout_in_grid$ques$7, $Layout_player_position_valid$ques$8, $Layout_default_spawn$10;
 
       
       Opal.const_set($nesting[0], 'P1_SPAWN_GRID', [8, 8].$freeze());
@@ -24904,7 +24907,53 @@ Opal.modules["rubyfight/layout"] = function(Opal) {
           return $ret_or_1
         }
       }, $Layout_in_grid$ques$7.$$arity = 2);
-      Opal.defs(self, '$default_spawn', $Layout_default_spawn$8 = function $$default_spawn(which) {
+      Opal.defs(self, '$player_position_valid?', $Layout_player_position_valid$ques$8 = function(px, py, mask_rows) {
+        var $$9, self = this, c = nil, tile = nil, cols = nil, rows = nil, player_size = nil, rad = nil, corners = nil;
+
+        
+        c = self.$cfg();
+        tile = c['$[]']("TILE_SIZE").$to_i();
+        cols = c['$[]']("GRID_COLS").$to_i();
+        rows = c['$[]']("GRID_ROWS").$to_i();
+        player_size = c['$[]']("PLAYER_SIZE").$to_i();
+        rad = $rb_minus($rb_divide(player_size, 2), 2);
+        corners = [[$rb_minus(px, rad), $rb_minus(py, rad)], [$rb_plus(px, rad), $rb_minus(py, rad)], [$rb_minus(px, rad), $rb_plus(py, rad)], [$rb_plus(px, rad), $rb_plus(py, rad)]];
+        return $send(corners, 'all?', [], ($$9 = function(cx, cy){var self = $$9.$$s == null ? this : $$9.$$s, gx = nil, gy = nil, $ret_or_4 = nil, $ret_or_5 = nil, $ret_or_6 = nil, $ret_or_7 = nil;
+
+        
+          
+          if (cx == null) {
+            cx = nil;
+          };
+          
+          if (cy == null) {
+            cy = nil;
+          };
+          gx = $rb_divide(cx.$to_f(), tile).$floor();
+          gy = $rb_divide(cy.$to_f(), tile).$floor();
+          if ($truthy((function() {if ($truthy(($ret_or_4 = (function() {if ($truthy(($ret_or_5 = (function() {if ($truthy(($ret_or_6 = $rb_lt(gx, 0)))) {
+            return $ret_or_6
+          } else {
+            return $rb_ge(gx, cols)
+          }; return nil; })()))) {
+            return $ret_or_5
+          } else {
+            return $rb_lt(gy, 0)
+          }; return nil; })()))) {
+            return $ret_or_4
+          } else {
+            return $rb_ge(gy, rows)
+          }; return nil; })())) {
+            return false;};
+          if ($truthy((function() {if ($truthy(($ret_or_7 = mask_rows['$[]'](gy)['$nil?']()))) {
+            return $ret_or_7
+          } else {
+            return mask_rows['$[]'](gy)['$[]'](gx)['$=='](" ")
+          }; return nil; })())) {
+            return false;};
+          return true;}, $$9.$$s = self, $$9.$$arity = 2, $$9));
+      }, $Layout_player_position_valid$ques$8.$$arity = 3);
+      Opal.defs(self, '$default_spawn', $Layout_default_spawn$10 = function $$default_spawn(which) {
         var $a, $b, self = this, gx = nil, gy = nil;
 
         
@@ -24914,7 +24963,7 @@ Opal.modules["rubyfight/layout"] = function(Opal) {
           return $$($nesting, 'P2_SPAWN_GRID')
         }; return nil; })(), $a = Opal.to_ary($b), (gx = ($a[0] == null ? nil : $a[0])), (gy = ($a[1] == null ? nil : $a[1])), $b;
         return self.$grid_to_tile_center(gx, gy);
-      }, $Layout_default_spawn$8.$$arity = 1);
+      }, $Layout_default_spawn$10.$$arity = 1);
     })($nesting[0], $nesting)
   })($nesting[0], $nesting)
 };
@@ -25122,7 +25171,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
 (function(Opal) {
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module;
 
-  Opal.add_stubs(['$require', '$puts', '$boot_banner', '$dump', '$to_browser_hash', '$expose_to_browser!', '$attach_territory_bridge!', '$announce!']);
+  Opal.add_stubs(['$require', '$puts', '$boot_banner', '$dump', '$to_browser_hash', '$expose_to_browser!', '$attach_layout_bridge!', '$attach_territory_bridge!', '$announce!']);
   
   self.$require("opal");
   self.$require("json");
@@ -25134,7 +25183,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
   (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
-    var $nesting = [self].concat($parent_nesting), $Rubyfight_boot_banner$1, $Rubyfight_announce$excl$2, $Rubyfight_expose_to_browser$excl$3, $Rubyfight_attach_territory_bridge$excl$4;
+    var $nesting = [self].concat($parent_nesting), $Rubyfight_boot_banner$1, $Rubyfight_announce$excl$2, $Rubyfight_expose_to_browser$excl$3, $Rubyfight_attach_territory_bridge$excl$4, $Rubyfight_attach_layout_bridge$excl$5;
 
     
     Opal.defs(self, '$boot_banner', $Rubyfight_boot_banner$1 = function $$boot_banner() {
@@ -25177,10 +25226,37 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
         var a = _t['$calc_scores'](grid, maskRows);
         return [a[0], a[1]];
       };
+      window.RUBYFIGHT.territoryPushFlag = function(pairs, gx, gy) {
+        var r = _t['$push_flag'](pairs, gx, gy);
+        if (r === Opal.nil) return null;
+        var out = [];
+        for (var i = 0; i < r.length; i++) {
+          out.push([r[i][0], r[i][1]]);
+        }
+        return out;
+      };
     ;
     }, $Rubyfight_attach_territory_bridge$excl$4.$$arity = 0);
+    Opal.defs(self, '$attach_layout_bridge!', $Rubyfight_attach_layout_bridge$excl$5 = function() {
+      var self = this, l = nil;
+
+      
+      l = $$($nesting, 'Layout');
+      
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _l = l;
+      window.RUBYFIGHT.layoutPixelToGrid = function(px, py) {
+        var a = _l['$pixel_to_grid'](px, py);
+        return [a[0], a[1]];
+      };
+      window.RUBYFIGHT.layoutIsValidPosition = function(px, py, maskRows) {
+        return _l['$player_position_valid$ques'](px, py, maskRows);
+      };
+    ;
+    }, $Rubyfight_attach_layout_bridge$excl$5.$$arity = 0);
   })($nesting[0], $nesting);
   $$($nesting, 'Rubyfight')['$expose_to_browser!']();
+  $$($nesting, 'Rubyfight')['$attach_layout_bridge!']();
   $$($nesting, 'Rubyfight')['$attach_territory_bridge!']();
   return $$($nesting, 'Rubyfight')['$announce!']();
 })(Opal);

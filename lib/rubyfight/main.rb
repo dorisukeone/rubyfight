@@ -45,10 +45,35 @@ module Rubyfight
         var a = _t['$calc_scores'](grid, maskRows);
         return [a[0], a[1]];
       };
+      window.RUBYFIGHT.territoryPushFlag = function(pairs, gx, gy) {
+        var r = _t['$push_flag'](pairs, gx, gy);
+        if (r === Opal.nil) return null;
+        var out = [];
+        for (var i = 0; i < r.length; i++) {
+          out.push([r[i][0], r[i][1]]);
+        }
+        return out;
+      };
+    }
+  end
+
+  def self.attach_layout_bridge!
+    l = Layout
+    %x{
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _l = #{l};
+      window.RUBYFIGHT.layoutPixelToGrid = function(px, py) {
+        var a = _l['$pixel_to_grid'](px, py);
+        return [a[0], a[1]];
+      };
+      window.RUBYFIGHT.layoutIsValidPosition = function(px, py, maskRows) {
+        return _l['$player_position_valid$ques'](px, py, maskRows);
+      };
     }
   end
 end
 
 Rubyfight.expose_to_browser!
+Rubyfight.attach_layout_bridge!
 Rubyfight.attach_territory_bridge!
 Rubyfight.announce!

@@ -1052,6 +1052,9 @@
     }
 
     function isValidPosition(px, py) {
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.layoutIsValidPosition === 'function') {
+        return !!window.RUBYFIGHT.layoutIsValidPosition(px, py, FIELD_MASK);
+      }
       const r = (CONFIG.PLAYER_SIZE / 2) - 2; 
       const points = [
         {x: px - r, y: py - r},
@@ -1073,17 +1076,42 @@
     }
 
     function placeFlag(p, playerId) {
-      const gx = Math.floor(p.x / CONFIG.TILE_SIZE);
-      const gy = Math.floor(p.y / CONFIG.TILE_SIZE);
-      
+      let gx, gy;
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.layoutPixelToGrid === 'function') {
+        const g = window.RUBYFIGHT.layoutPixelToGrid(p.x, p.y);
+        gx = g[0];
+        gy = g[1];
+      } else {
+        gx = Math.floor(p.x / CONFIG.TILE_SIZE);
+        gy = Math.floor(p.y / CONFIG.TILE_SIZE);
+      }
+
       if (gx < 0 || gx >= CONFIG.GRID_COLS || gy < 0 || gy >= CONFIG.GRID_ROWS) return;
-      if (FIELD_MASK[gy][gx] === ' ') return; 
+      if (FIELD_MASK[gy][gx] === ' ') return;
 
       const flags = playerId === 1 ? flags1 : flags2;
-      const existingIdx = flags.findIndex(f => f.gx === gx && f.gy === gy);
 
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.territoryPushFlag === 'function') {
+        const pairs = flags.map(function (f) { return [f.gx, f.gy]; });
+        const nextPairs = window.RUBYFIGHT.territoryPushFlag(pairs, gx, gy);
+        if (nextPairs === null) return;
+        flags.length = 0;
+        for (let i = 0; i < nextPairs.length; i++) {
+          flags.push({ gx: nextPairs[i][0], gy: nextPairs[i][1] });
+        }
+        if (flags.length === 3) {
+          fillPolygon(playerId, flags);
+          if (playerId === 1) flags1 = []; else flags2 = [];
+          playSound('close');
+        } else {
+          playSound('flag');
+        }
+        return;
+      }
+
+      const existingIdx = flags.findIndex(f => f.gx === gx && f.gy === gy);
       if (existingIdx !== -1) {
-        return; 
+        return;
       } else {
         flags.push({gx, gy});
         if (flags.length === 3) {

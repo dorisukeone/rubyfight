@@ -1,8 +1,10 @@
 require 'minitest/autorun'
 require 'rubyfight/game_config'
+require 'rubyfight/field_mask'
 require 'rubyfight/layout'
 
 class LayoutTest < Minitest::Test
+  MASK = Rubyfight::FieldMask::ROWS
   def test_field_metrics_match_js
     h = Rubyfight::GameConfig.to_browser_hash
     assert_equal 640, h['FIELD_WIDTH']
@@ -36,5 +38,34 @@ class LayoutTest < Minitest::Test
     assert_in_delta 170.0, p1[1], 1e-6
     assert_in_delta 470.0, p2[0], 1e-6
     assert_in_delta 170.0, p2[1], 1e-6
+  end
+
+  def test_player_position_valid_on_spawn_center
+    cx, cy = Rubyfight::Layout.default_spawn(:p1)
+    assert Rubyfight::Layout.player_position_valid?(cx, cy, MASK)
+  end
+
+  def test_player_position_invalid_outside_field
+    refute Rubyfight::Layout.player_position_valid?(-100, -100, MASK)
+  end
+
+  def test_player_position_invalid_in_hole
+    hole = nil
+    MASK.each_with_index do |row, y|
+      row.chars.each_with_index do |ch, x|
+        if ch == ' '
+          hole = [x, y]
+          break
+        end
+      end
+      break if hole
+    end
+    skip 'mask has no holes' unless hole
+
+    gx, gy = hole
+    ts = Rubyfight::Layout.tile_size
+    cx = gx * ts + ts / 2.0
+    cy = gy * ts + ts / 2.0
+    refute Rubyfight::Layout.player_position_valid?(cx, cy, MASK)
   end
 end
