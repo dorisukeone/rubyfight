@@ -10,6 +10,8 @@ require 'rubyfight/territory'
 require 'rubyfight/cpu'
 require 'rubyfight/game_state'
 require 'rubyfight/movement'
+require 'rubyfight/match'
+require 'rubyfight/session'
 
 module Rubyfight
   def self.boot_banner
@@ -94,6 +96,53 @@ module Rubyfight
     }
   end
 
+  def self.attach_match_bridge!
+    mt = Match
+    %x{
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _mt = #{mt};
+      window.RUBYFIGHT.matchResultHeadline = function(p1s, p2s, vsCpu) {
+        return _mt['$result_headline'](p1s, p2s, vsCpu);
+      };
+      window.RUBYFIGHT.matchResultTone = function(p1s, p2s) {
+        return _mt['$result_tone'](p1s, p2s);
+      };
+    }
+  end
+
+  def self.attach_session_bridge!
+    s = Session
+    rows = Layout.grid_rows
+    cols = Layout.grid_cols
+    %x{
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _ses = #{s};
+      window.RUBYFIGHT.sessionInitialTimeRemaining = function() {
+        return _ses['$initial_time_remaining']();
+      };
+      window.RUBYFIGHT.sessionP1Spawn = function() {
+        var a = _ses['$p1_spawn_xy']();
+        return [a[0], a[1]];
+      };
+      window.RUBYFIGHT.sessionP2Spawn = function() {
+        var a = _ses['$p2_spawn_xy']();
+        return [a[0], a[1]];
+      };
+      window.RUBYFIGHT.sessionBootstrapGrids = function() {
+        function makeEmpty() {
+          var g = [];
+          for (var y = 0; y < #{rows}; y++) {
+            var row = [];
+            for (var x = 0; x < #{cols}; x++) { row.push(0); }
+            g.push(row);
+          }
+          return g;
+        }
+        return [makeEmpty(), makeEmpty()];
+      };
+    }
+  end
+
   def self.attach_movement_bridge!
     m = Movement
     %x{
@@ -131,6 +180,9 @@ module Rubyfight
       window.RUBYFIGHT.gameStateCanAdvanceFromResult = function(nowMs, stateStartedMs) {
         return _gs['$can_advance_from_result$ques'](nowMs, stateStartedMs);
       };
+      window.RUBYFIGHT.gameStateBlink500msPrimary = function(nowMs) {
+        return _gs['$blink_500ms_primary$ques'](nowMs);
+      };
       window.RUBYFIGHT.gameStateMenuPrevIndex = function(index, menuSize) {
         return _gs['$menu_prev_index'](index, menuSize);
       };
@@ -150,5 +202,7 @@ Rubyfight.attach_layout_bridge!
 Rubyfight.attach_territory_bridge!
 Rubyfight.attach_cpu_bridge!
 Rubyfight.attach_movement_bridge!
+Rubyfight.attach_match_bridge!
+Rubyfight.attach_session_bridge!
 Rubyfight.attach_game_state_bridge!
 Rubyfight.announce!

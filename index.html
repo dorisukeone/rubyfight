@@ -1056,25 +1056,44 @@
     function startGame() {
       state = 'PLAYING';
       stateStartTime = Date.now();
-      timeRemaining = CONFIG.GAME_TIME;
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionInitialTimeRemaining === 'function') {
+        timeRemaining = window.RUBYFIGHT.sessionInitialTimeRemaining();
+      } else {
+        timeRemaining = CONFIG.GAME_TIME;
+      }
       playSound('select');
-      
-      grid = [];
-      effectGrid = [];
+
       flags1 = [];
       flags2 = [];
-      for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
-        grid[y] = [];
-        effectGrid[y] = [];
-        for (let x = 0; x < CONFIG.GRID_COLS; x++) {
-          grid[y][x] = 0;
-          effectGrid[y][x] = 0;
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionBootstrapGrids === 'function') {
+        const pair = window.RUBYFIGHT.sessionBootstrapGrids();
+        grid = pair[0];
+        effectGrid = pair[1];
+      } else {
+        grid = [];
+        effectGrid = [];
+        for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
+          grid[y] = [];
+          effectGrid[y] = [];
+          for (let x = 0; x < CONFIG.GRID_COLS; x++) {
+            grid[y][x] = 0;
+            effectGrid[y][x] = 0;
+          }
         }
       }
 
-      // ルビー型エリア内に収まるように初期位置を調整
-      p1 = { x: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
-      p2 = { x: 23 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionP1Spawn === 'function') {
+        const s1 = window.RUBYFIGHT.sessionP1Spawn();
+        p1 = { x: s1[0], y: s1[1] };
+      } else {
+        p1 = { x: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+      }
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionP2Spawn === 'function') {
+        const s2 = window.RUBYFIGHT.sessionP2Spawn();
+        p2 = { x: s2[0], y: s2[1] };
+      } else {
+        p2 = { x: 23 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
+      }
 
       cpuTarget = null;
       cpuWaitTimer = 0;
@@ -1825,22 +1844,53 @@
       ctx.fillText("TIME UP!", CONFIG.WIDTH / 2, 180);
 
       ctx.font = '32px "Press Start 2P", monospace';
-      let msg = "";
-      if (p1Score > p2Score) {
-        msg = "P1 WINS!";
+      let msg;
+      let tone;
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.matchResultHeadline === 'function') {
+        msg = window.RUBYFIGHT.matchResultHeadline(p1Score, p2Score, mode === 1);
+        tone = window.RUBYFIGHT.matchResultTone
+          ? window.RUBYFIGHT.matchResultTone(p1Score, p2Score)
+          : null;
+      } else {
+        msg = '';
+        tone = null;
+      }
+      if (!msg) {
+        if (p1Score > p2Score) {
+          msg = "P1 WINS!";
+          tone = 'p1';
+        } else if (p2Score > p1Score) {
+          msg = mode === 1 ? "CPU WINS!" : "P2 WINS!";
+          tone = 'p2';
+        } else {
+          msg = "DRAW!";
+          tone = 'tie';
+        }
+      }
+      if (tone === 'p1') {
         ctx.fillStyle = CONFIG.COLORS.p1.tile;
-      } else if (p2Score > p1Score) {
-        msg = mode === 1 ? "CPU WINS!" : "P2 WINS!";
+      } else if (tone === 'p2') {
         ctx.fillStyle = CONFIG.COLORS.p2.tile;
       } else {
-        msg = "DRAW!";
         ctx.fillStyle = CONFIG.COLORS.ui;
       }
       ctx.fillText(msg, CONFIG.WIDTH / 2, 260);
 
-      if (Date.now() - stateStartTime > 2000) {
+      let canShowReturn = false;
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateCanAdvanceFromResult === 'function') {
+        canShowReturn = window.RUBYFIGHT.gameStateCanAdvanceFromResult(Date.now(), stateStartTime);
+      } else {
+        canShowReturn = Date.now() - stateStartTime > 2000;
+      }
+      if (canShowReturn) {
         ctx.font = '16px "Press Start 2P", monospace';
-        ctx.fillStyle = (Math.floor(Date.now() / 500) % 2 === 0) ? CONFIG.COLORS.ui : '#ffaaaa';
+        let blinkOn = true;
+        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateBlink500msPrimary === 'function') {
+          blinkOn = window.RUBYFIGHT.gameStateBlink500msPrimary(Date.now());
+        } else {
+          blinkOn = Math.floor(Date.now() / 500) % 2 === 0;
+        }
+        ctx.fillStyle = blinkOn ? CONFIG.COLORS.ui : '#ffaaaa';
         ctx.fillText("PRESS SPACE TO RETURN", CONFIG.WIDTH / 2, 360);
       }
     }

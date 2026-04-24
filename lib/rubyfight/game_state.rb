@@ -21,6 +21,11 @@ module Rubyfight
       (now_ms - state_started_ms) > COOLDOWN_MS_BEFORE_RESULT_ADVANCE
     end
 
+    # リザルト画面「PRESS SPACE…」の点滅（500ms 周期）
+    def self.blink_500ms_primary?(now_ms)
+      (now_ms / 500).floor % 2 == 0
+    end
+
     def self.menu_prev_index(index, menu_size)
       (index + menu_size - 1) % menu_size
     end

@@ -20,6 +20,13 @@ class GameStateTest < Minitest::Test
     assert gs.can_advance_from_result?(2601, 600)
   end
 
+  def test_blink_500ms
+    gs = Rubyfight::GameState
+    assert_equal gs.blink_500ms_primary?(0), true
+    assert_equal gs.blink_500ms_primary?(499), true
+    assert_equal gs.blink_500ms_primary?(500), false
+  end
+
   def test_menu_wrap
     gs = Rubyfight::GameState
     assert_equal 3, gs.menu_prev_index(0, 4)
