@@ -28,5 +28,15 @@ module Rubyfight
     def self.menu_next_index(index, menu_size)
       (index + 1) % menu_size
     end
+
+    # タイトルで Space/Enter 時の選択（index.html titleMenuIndex と対応）
+    def self.title_confirm_action(menu_index)
+      case menu_index
+      when 0 then 'vs_cpu'
+      when 1 then 'vs_2p'
+      when 2 then 'options'
+      when 3 then 'credits'
+      end
+    end
   end
 end

@@ -26,4 +26,13 @@ class GameStateTest < Minitest::Test
     assert_equal 0, gs.menu_next_index(3, 4)
     assert_equal 1, gs.menu_next_index(0, 4)
   end
+
+  def test_title_confirm_action
+    gs = Rubyfight::GameState
+    assert_equal 'vs_cpu', gs.title_confirm_action(0)
+    assert_equal 'vs_2p', gs.title_confirm_action(1)
+    assert_equal 'options', gs.title_confirm_action(2)
+    assert_equal 'credits', gs.title_confirm_action(3)
+    assert_nil gs.title_confirm_action(99)
+  end
 end

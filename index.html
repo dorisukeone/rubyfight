@@ -993,18 +993,35 @@
           return;
         }
         if (code === 'Space' || code === 'Enter') {
-          if (titleMenuIndex === 0) {
-            mode = 1;
-            startGame();
-          } else if (titleMenuIndex === 1) {
-            mode = 2;
-            startGame();
-          } else if (titleMenuIndex === 2) {
-            playSound('select');
-            titleOverlay = 'OPTIONS';
-          } else if (titleMenuIndex === 3) {
-            playSound('select');
-            titleOverlay = 'CREDITS';
+          if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateTitleConfirmAction === 'function') {
+            const act = window.RUBYFIGHT.gameStateTitleConfirmAction(titleMenuIndex);
+            if (act === 'vs_cpu') {
+              mode = 1;
+              startGame();
+            } else if (act === 'vs_2p') {
+              mode = 2;
+              startGame();
+            } else if (act === 'options') {
+              playSound('select');
+              titleOverlay = 'OPTIONS';
+            } else if (act === 'credits') {
+              playSound('select');
+              titleOverlay = 'CREDITS';
+            }
+          } else {
+            if (titleMenuIndex === 0) {
+              mode = 1;
+              startGame();
+            } else if (titleMenuIndex === 1) {
+              mode = 2;
+              startGame();
+            } else if (titleMenuIndex === 2) {
+              playSound('select');
+              titleOverlay = 'OPTIONS';
+            } else if (titleMenuIndex === 3) {
+              playSound('select');
+              titleOverlay = 'CREDITS';
+            }
           }
         }
         return;
@@ -1240,9 +1257,14 @@
           }
         }
 
-        const currentSpeed = timeRemaining <= CONFIG.RUSH_TIME 
-          ? CONFIG.BASE_SPEED * CONFIG.SPEED_UP_MULTIPLIER 
-          : CONFIG.BASE_SPEED;
+        let currentSpeed;
+        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.moveSpeedForTimeRemaining === 'function') {
+          currentSpeed = window.RUBYFIGHT.moveSpeedForTimeRemaining(timeRemaining);
+        } else {
+          currentSpeed = timeRemaining <= CONFIG.RUSH_TIME
+            ? CONFIG.BASE_SPEED * CONFIG.SPEED_UP_MULTIPLIER
+            : CONFIG.BASE_SPEED;
+        }
 
         // P1の移動処理
         let dx1 = 0, dy1 = 0;
@@ -1311,15 +1333,29 @@
               let dx2 = cpuTarget.x - p2.x;
               let dy2 = cpuTarget.y - p2.y;
               const dist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
-              const cpuSpeed = currentSpeed * CONFIG.CPU_SPEED_MULTIPLIER;
+              let cpuSpeed;
+              if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining === 'function') {
+                cpuSpeed = window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining(timeRemaining);
+              } else {
+                cpuSpeed = currentSpeed * CONFIG.CPU_SPEED_MULTIPLIER;
+              }
 
-              // ★ 到達判定を少し緩くして(5px以内)、ミリ単位のスタックを防止
-              if (dist < cpuSpeed * dt || dist < 5) {
+              let cpuArrived = false;
+              if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuReachedTarget === 'function') {
+                cpuArrived = window.RUBYFIGHT.cpuReachedTarget(dist, cpuSpeed, dt);
+              } else {
+                cpuArrived = dist < cpuSpeed * dt || dist < 5;
+              }
+              if (cpuArrived) {
                 p2.x = cpuTarget.x;
                 p2.y = cpuTarget.y;
                 placeFlag(p2, 2);
                 cpuTarget = null;
-                cpuWaitTimer = 0.1 + Math.random() * 0.2;
+                if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuWaitAfterFlagSec === 'function') {
+                  cpuWaitTimer = window.RUBYFIGHT.cpuWaitAfterFlagSec();
+                } else {
+                  cpuWaitTimer = 0.1 + Math.random() * 0.2;
+                }
               } else {
                 const nextX = p2.x + (dx2 / dist) * cpuSpeed * dt;
                 const nextY = p2.y + (dy2 / dist) * cpuSpeed * dt;
@@ -1339,10 +1375,19 @@
                 // ★ CPUが壁に引っかかって完全にスタックした場合はターゲットを取り直す
                 if (!movedX && !movedY) {
                    cpuTarget = null;
-                   cpuWaitTimer = 0.3; // 少し休んでから再考
-                   // 壁へのめり込みを解消するため、少しだけ中央に弾き戻す
-                   p2.x += (FIELD_WIDTH / 2 - p2.x) * 0.05;
-                   p2.y += (FIELD_HEIGHT / 2 - p2.y) * 0.05;
+                   if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuWaitAfterStuckSec === 'function') {
+                     cpuWaitTimer = window.RUBYFIGHT.cpuWaitAfterStuckSec();
+                   } else {
+                     cpuWaitTimer = 0.3;
+                   }
+                   if (window.RUBYFIGHT && typeof window.RUBYFIGHT.nudgeTowardFieldCenter === 'function') {
+                     const np = window.RUBYFIGHT.nudgeTowardFieldCenter(p2.x, p2.y);
+                     p2.x = np[0];
+                     p2.y = np[1];
+                   } else {
+                     p2.x += (FIELD_WIDTH / 2 - p2.x) * 0.05;
+                     p2.y += (FIELD_HEIGHT / 2 - p2.y) * 0.05;
+                   }
                 }
               }
             }
@@ -1615,7 +1660,11 @@
       ctx.fillText(`${p2Label}:${p2Score.toString().padStart(3, '0')}`, CONFIG.WIDTH - 14, 48);
 
       let timerColor = gold;
-      if (timeRemaining <= CONFIG.RUSH_TIME && Math.floor(Date.now() / 100) % 2 === 0) {
+      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.rushHudBlinkPrimary === 'function') {
+        if (window.RUBYFIGHT.rushHudBlinkPrimary(timeRemaining, Date.now())) {
+          timerColor = CONFIG.COLORS.p1.tile;
+        }
+      } else if (timeRemaining <= CONFIG.RUSH_TIME && Math.floor(Date.now() / 100) % 2 === 0) {
         timerColor = CONFIG.COLORS.p1.tile;
       }
       ctx.textAlign = 'center';

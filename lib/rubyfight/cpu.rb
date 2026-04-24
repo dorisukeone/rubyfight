@@ -22,5 +22,13 @@ module Rubyfight
 
       candidates[random.rand(candidates.length)]
     end
+
+    def self.wait_after_flag_sec(random: Random.new)
+      0.1 + random.rand * 0.2
+    end
+
+    def self.wait_after_stuck_sec
+      0.3
+    end
   end
 end

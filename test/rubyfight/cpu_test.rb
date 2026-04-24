@@ -31,4 +31,17 @@ class CpuTest < Minitest::Test
     b = Rubyfight::Cpu.pick_target_center(g, MASK, random: Random.new(12345))
     assert_equal a, b
   end
+
+  def test_wait_after_flag_in_range
+    r = Random.new(1)
+    20.times do
+      w = Rubyfight::Cpu.wait_after_flag_sec(random: r)
+      assert_operator w, :>=, 0.1
+      assert_operator w, :<, 0.3
+    end
+  end
+
+  def test_wait_after_stuck
+    assert_in_delta 0.3, Rubyfight::Cpu.wait_after_stuck_sec, 1e-9
+  end
 end
