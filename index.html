@@ -40,12 +40,22 @@
 </head>
 <body>
   <canvas id="gameCanvas" width="960" height="540"></canvas>
-
+  <script src="build/rubyfight.js"></script>
   <script>
+    function parseJsonMaybeOpal(val) {
+      if (val == null) return null;
+      if (typeof val === 'string') return JSON.parse(val);
+      if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+        var w = val.WIDTH;
+        if (typeof w === 'number') return val;
+      }
+      return JSON.parse(String(val));
+    }
+
     // ==========================================
-    // CONFIG: 差し替え可能な要素（使い回し用設計）
+    // CONFIG: Ruby(GameConfig) を優先。build/rubyfight.js 未読込時はフォールバック
     // ==========================================
-    const CONFIG = {
+    const FALLBACK_CONFIG = {
       // 画面・フィールド設定 (16:9モニター想定に最適化)
       WIDTH: 960,
       HEIGHT: 540,
@@ -143,13 +153,14 @@
         }
       }
     };
+    const CONFIG = parseJsonMaybeOpal(window.RUBYFIGHT_CONFIG_JSON) || FALLBACK_CONFIG;
 
     // ==========================================
     // ルビー（ダイヤモンド）型フィールドのマスク定義
     // '0': 有効なプレイエリア, ' ': プレイ不可エリア
     // ★ 頂点を少し下げてルビーの形を調整
     // ==========================================
-    const FIELD_MASK = [
+    const FALLBACK_FIELD_MASK = [
       "          000000000000          ", // 0
       "         00000000000000         ", // 1
       "       000000000000000000       ", // 2
@@ -169,6 +180,7 @@
       "            00000000            ", // 16
       "             000000             "  // 17 (最下部)
     ];
+    const FIELD_MASK = parseJsonMaybeOpal(window.RUBYFIGHT_FIELD_MASK_JSON) || FALLBACK_FIELD_MASK;
 
     // ==========================================
     // グローバル変数・状態管理
@@ -259,16 +271,15 @@
     ];
 
     // ==========================================
-    // UI レイアウト（パーツをこの座標に配置。基準 960×540）
+    // UI レイアウト（Ruby UiLayout を優先）
     // ==========================================
-    const UI_LAYOUT = {
+    const FALLBACK_UI_LAYOUT = {
       title: {
         logoCenterX: 480,
         juggingY: 30,
         mainTitleY: 108,
         subRubykaigiY: 172,
         subTerritoryY: 196,
-        // メニュー先頭 Y（ロゴ〜サブタイトル下の余白 → メニュー・キャラの帯）
         menu: { y: 260 },
         mascotLeft: { x: 124, y: 308 },
         mascotRight: { x: 836, y: 308 },
@@ -276,7 +287,6 @@
         footerControlsY: 466,
         footerFullscreenY: 486,
         footerCopyrightY: 508,
-        // PNG パーツの配置（x,y = 左上, w,h = 枠。fit: cover=枠を埋める / contain=全体が入る）
         parts: {
           background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
           logo: { x: 136, y: 18, w: 688, h: 252, fit: 'contain' },
@@ -285,6 +295,7 @@
         }
       }
     };
+    const UI_LAYOUT = parseJsonMaybeOpal(window.RUBYFIGHT_UI_LAYOUT_JSON) || FALLBACK_UI_LAYOUT;
 
     // タイトル左：赤ビーン風マスコット（0:輪郭 R:体 W:顔 b:目）
     const TITLE_SPRITE_RED = [
@@ -1953,31 +1964,13 @@
       requestAnimationFrame(gameLoop);
     }
 
-    document.fonts.ready.then(() => {
-      initAssets(() => {
-        lastTime = performance.now();
-        requestAnimationFrame(gameLoop);
-      });
-    });
-
-  </script>
-  <!-- Ruby (Opal) コア: bundle exec rake opal:build で生成。DevTools コンソールにバナーが出る -->
-  <script src="build/rubyfight.js"></script>
-  <script>
-    (function () {
-      function parseJsonMaybeOpal(val) {
-        if (val == null) return null;
-        if (typeof val === 'string') return JSON.parse(val);
-        if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-          var w = val.WIDTH;
-          if (typeof w === 'number') return val;
-        }
-        return JSON.parse(String(val));
-      }
+    (function verifyRubyCoreAligned() {
       try {
-        var raw = window.RUBYFIGHT_CONFIG_JSON;
-        if (raw == null) return;
-        var rb = parseJsonMaybeOpal(raw);
+        if (window.RUBYFIGHT_CONFIG_JSON == null) {
+          console.warn('[RUBYFIGHT] RUBYFIGHT_CONFIG_JSON missing — using FALLBACK_* (add build/rubyfight.js)');
+          return;
+        }
+        var rb = parseJsonMaybeOpal(window.RUBYFIGHT_CONFIG_JSON);
         var keys = ['WIDTH', 'HEIGHT', 'TILE_SIZE', 'GRID_COLS', 'GRID_ROWS', 'GAME_TIME', 'RUSH_TIME'];
         for (var i = 0; i < keys.length; i++) {
           var k = keys[i];
@@ -1986,20 +1979,14 @@
             return;
           }
         }
-        var layoutCmp = {
-          FIELD_WIDTH: FIELD_WIDTH,
-          FIELD_HEIGHT: FIELD_HEIGHT,
-          OFFSET_X: OFFSET_X,
-          OFFSET_Y: OFFSET_Y
-        };
+        var layoutCmp = { FIELD_WIDTH: FIELD_WIDTH, FIELD_HEIGHT: FIELD_HEIGHT, OFFSET_X: OFFSET_X, OFFSET_Y: OFFSET_Y };
         for (var lk in layoutCmp) {
           if (layoutCmp[lk] !== rb[lk]) {
             console.error('[RUBYFIGHT] Ruby/JS layout mismatch', lk, layoutCmp[lk], rb[lk]);
             return;
           }
         }
-        var fRaw = window.RUBYFIGHT_FIELD_MASK_JSON;
-        var fm = parseJsonMaybeOpal(fRaw);
+        var fm = parseJsonMaybeOpal(window.RUBYFIGHT_FIELD_MASK_JSON);
         if (!Array.isArray(fm) || fm.length !== FIELD_MASK.length) {
           console.error('[RUBYFIGHT] FIELD_MASK length mismatch', fm && fm.length, FIELD_MASK.length);
           return;
@@ -2010,11 +1997,27 @@
             return;
           }
         }
-        console.log('[RUBYFIGHT] Ruby↔JS CONFIG + FIELD_MASK OK');
+        if (window.RUBYFIGHT_UI_LAYOUT_JSON != null) {
+          var ru = parseJsonMaybeOpal(window.RUBYFIGHT_UI_LAYOUT_JSON);
+          if (!ru || !ru.title || ru.title.logoCenterX !== UI_LAYOUT.title.logoCenterX) {
+            console.error('[RUBYFIGHT] UI_LAYOUT mismatch', ru && ru.title, UI_LAYOUT && UI_LAYOUT.title);
+            return;
+          }
+        }
+        console.log('[RUBYFIGHT] Ruby core ↔ page boot OK (CONFIG + mask' +
+          (window.RUBYFIGHT_UI_LAYOUT_JSON != null ? ' + UI_LAYOUT)' : ')'));
       } catch (e) {
-        console.warn('[RUBYFIGHT] Opal config verify failed', e);
+        console.warn('[RUBYFIGHT] verify failed', e);
       }
     })();
+
+    document.fonts.ready.then(() => {
+      initAssets(() => {
+        lastTime = performance.now();
+        requestAnimationFrame(gameLoop);
+      });
+    });
+
   </script>
 </body>
 </html>

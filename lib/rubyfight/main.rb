@@ -13,6 +13,7 @@ require 'rubyfight/movement'
 require 'rubyfight/match'
 require 'rubyfight/session'
 require 'rubyfight/graphics'
+require 'rubyfight/ui_layout'
 
 module Rubyfight
   def self.boot_banner
@@ -28,9 +29,11 @@ module Rubyfight
   def self.expose_to_browser!
     j = JSON.dump(GameConfig.to_browser_hash)
     r = JSON.dump(FieldMask::ROWS)
+    u = JSON.dump(UiLayout.to_browser_hash)
     %x{
       window.RUBYFIGHT_CONFIG_JSON = #{j};
       window.RUBYFIGHT_FIELD_MASK_JSON = #{r};
+      window.RUBYFIGHT_UI_LAYOUT_JSON = #{u};
     }
   end
 
