@@ -25122,7 +25122,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
 (function(Opal) {
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module;
 
-  Opal.add_stubs(['$require', '$puts', '$boot_banner', '$dump', '$to_browser_hash', '$expose_to_browser!', '$announce!']);
+  Opal.add_stubs(['$require', '$puts', '$boot_banner', '$dump', '$to_browser_hash', '$expose_to_browser!', '$attach_territory_bridge!', '$announce!']);
   
   self.$require("opal");
   self.$require("json");
@@ -25134,7 +25134,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
   (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
-    var $nesting = [self].concat($parent_nesting), $Rubyfight_boot_banner$1, $Rubyfight_announce$excl$2, $Rubyfight_expose_to_browser$excl$3;
+    var $nesting = [self].concat($parent_nesting), $Rubyfight_boot_banner$1, $Rubyfight_announce$excl$2, $Rubyfight_expose_to_browser$excl$3, $Rubyfight_attach_territory_bridge$excl$4;
 
     
     Opal.defs(self, '$boot_banner', $Rubyfight_boot_banner$1 = function $$boot_banner() {
@@ -25158,7 +25158,29 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
       window.RUBYFIGHT_FIELD_MASK_JSON = r;
     ;
     }, $Rubyfight_expose_to_browser$excl$3.$$arity = 0);
+    Opal.defs(self, '$attach_territory_bridge!', $Rubyfight_attach_territory_bridge$excl$4 = function() {
+      var self = this, t = nil;
+
+      
+      t = $$($nesting, 'Territory');
+      
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _t = t;
+      window.RUBYFIGHT.territoryPointInTriangle = function(px, py, x0, y0, x1, y1, x2, y2) {
+        return _t['$point_in_triangle$ques'](px, py, x0, y0, x1, y1, x2, y2);
+      };
+      window.RUBYFIGHT.territoryFillTriangle = function(grid, playerId, gx0, gy0, gx1, gy1, gx2, gy2, maskRows) {
+        var tri = [[gx0, gy0], [gx1, gy1], [gx2, gy2]];
+        return _t['$fill_triangle!'](grid, playerId, tri, maskRows);
+      };
+      window.RUBYFIGHT.territoryCalcScores = function(grid, maskRows) {
+        var a = _t['$calc_scores'](grid, maskRows);
+        return [a[0], a[1]];
+      };
+    ;
+    }, $Rubyfight_attach_territory_bridge$excl$4.$$arity = 0);
   })($nesting[0], $nesting);
   $$($nesting, 'Rubyfight')['$expose_to_browser!']();
+  $$($nesting, 'Rubyfight')['$attach_territory_bridge!']();
   return $$($nesting, 'Rubyfight')['$announce!']();
 })(Opal);
