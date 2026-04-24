@@ -1257,25 +1257,28 @@
             cpuWaitTimer -= dt;
           } else {
             if (!cpuTarget) {
-              let targetTiles = [];
-              for(let y=0; y<CONFIG.GRID_ROWS; y++) {
-                for(let x=0; x<CONFIG.GRID_COLS; x++) {
-                  if(FIELD_MASK[y][x] !== ' ' && grid[y][x] !== 2) {
-                    // ★ キャラクターが確実に到達できる安全なマスだけをターゲットにする
-                    const tx = x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-                    const ty = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-                    if (isValidPosition(tx, ty)) {
-                      targetTiles.push({x: tx, y: ty});
+              if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuPickTarget === 'function') {
+                const t = window.RUBYFIGHT.cpuPickTarget(grid, FIELD_MASK);
+                if (t) {
+                  cpuTarget = { x: t[0], y: t[1] };
+                }
+              } else {
+                let targetTiles = [];
+                for(let y=0; y<CONFIG.GRID_ROWS; y++) {
+                  for(let x=0; x<CONFIG.GRID_COLS; x++) {
+                    if(FIELD_MASK[y][x] !== ' ' && grid[y][x] !== 2) {
+                      const tx = x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+                      const ty = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
+                      if (isValidPosition(tx, ty)) {
+                        targetTiles.push({x: tx, y: ty});
+                      }
                     }
                   }
                 }
-              }
-              if (targetTiles.length > 0) {
-                const targetTile = targetTiles[Math.floor(Math.random() * targetTiles.length)];
-                cpuTarget = {
-                  x: targetTile.x,
-                  y: targetTile.y
-                };
+                if (targetTiles.length > 0) {
+                  const targetTile = targetTiles[Math.floor(Math.random() * targetTiles.length)];
+                  cpuTarget = { x: targetTile.x, y: targetTile.y };
+                }
               }
             }
 

@@ -7,6 +7,7 @@ require 'rubyfight/game_config'
 require 'rubyfight/field_mask'
 require 'rubyfight/layout'
 require 'rubyfight/territory'
+require 'rubyfight/cpu'
 
 module Rubyfight
   def self.boot_banner
@@ -71,9 +72,23 @@ module Rubyfight
       };
     }
   end
+
+  def self.attach_cpu_bridge!
+    c = Cpu
+    %x{
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _c = #{c};
+      window.RUBYFIGHT.cpuPickTarget = function(grid, maskRows) {
+        var a = _c['$pick_target_center'](grid, maskRows);
+        if (a === Opal.nil) return null;
+        return [a[0], a[1]];
+      };
+    }
+  end
 end
 
 Rubyfight.expose_to_browser!
 Rubyfight.attach_layout_bridge!
 Rubyfight.attach_territory_bridge!
+Rubyfight.attach_cpu_bridge!
 Rubyfight.announce!
