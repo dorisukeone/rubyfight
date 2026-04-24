@@ -1,4 +1,6 @@
 # プレイヤー / CPU の移動速度と HUD 用ヘルパ（GameConfig 由来）
+require 'rubyfight/graphics'
+
 module Rubyfight
   module Movement
     ARRIVAL_EPSILON_PX = 5.0
@@ -36,7 +38,7 @@ module Rubyfight
       c = GameConfig.to_browser_hash
       return false if time_remaining > c['RUSH_TIME'].to_f
 
-      (now_ms / 100).floor % 2 == 0
+      Graphics.blink_even_phase?(now_ms, 100)
     end
   end
 end

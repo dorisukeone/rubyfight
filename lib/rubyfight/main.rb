@@ -12,6 +12,7 @@ require 'rubyfight/game_state'
 require 'rubyfight/movement'
 require 'rubyfight/match'
 require 'rubyfight/session'
+require 'rubyfight/graphics'
 
 module Rubyfight
   def self.boot_banner
@@ -92,6 +93,46 @@ module Rubyfight
       };
       window.RUBYFIGHT.cpuWaitAfterStuckSec = function() {
         return _c['$wait_after_stuck_sec']();
+      };
+    }
+  end
+
+  def self.attach_graphics_bridge!
+    gfx = Graphics
+    %x{
+      window.RUBYFIGHT = window.RUBYFIGHT || {};
+      var _gfx = #{gfx};
+      window.RUBYFIGHT.gfxClamp = function(v, lo, hi) {
+        return _gfx['$clamp'](v, lo, hi);
+      };
+      window.RUBYFIGHT.gfxBlinkEvenPhase = function(nowMs, periodMs) {
+        return _gfx['$blink_even_phase$ques'](nowMs, periodMs);
+      };
+      window.RUBYFIGHT.gfxAssetSheetCellPair = function(name) {
+        var c = _gfx['$asset_sheet_cell_pair'](name);
+        return [c[0], c[1]];
+      };
+      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi) {
+        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi);
+        return [r[0], r[1], r[2], r[3]];
+      };
+      window.RUBYFIGHT.gfxTitleCharFrameIndex = function(nowMs, fps, st, cnt, cols, rows) {
+        return _gfx['$title_char_frame_index'](nowMs, fps, st, cnt, cols, rows);
+      };
+      window.RUBYFIGHT.gfxSpriteFitScale = function(sw, sh, bw, bh, fit) {
+        return _gfx['$sprite_fit_scale'](sw, sh, bw, bh, fit);
+      };
+      window.RUBYFIGHT.gfxClampSheetSource = function(iw, ih, sx, sy, sw, sh) {
+        var r = _gfx['$clamp_sheet_source'](iw, ih, sx, sy, sw, sh);
+        return [r[0], r[1], r[2], r[3]];
+      };
+      window.RUBYFIGHT.gfxScaleGridRectToImage = function(gx, gy, gw, gh, inw, inh, shw, shh) {
+        var r = _gfx['$scale_grid_rect_to_image'](gx, gy, gw, gh, inw, inh, shw, shh);
+        return [r[0], r[1], r[2], r[3]];
+      };
+      window.RUBYFIGHT.gfxSheetCellRect = function(gx, gy, gw, gh, cols, rows, col, row, ins) {
+        var r = _gfx['$sheet_cell_rect'](gx, gy, gw, gh, cols, rows, col, row, ins);
+        return [r[0], r[1], r[2], r[3]];
       };
     }
   end
@@ -204,5 +245,6 @@ Rubyfight.attach_cpu_bridge!
 Rubyfight.attach_movement_bridge!
 Rubyfight.attach_match_bridge!
 Rubyfight.attach_session_bridge!
+Rubyfight.attach_graphics_bridge!
 Rubyfight.attach_game_state_bridge!
 Rubyfight.announce!

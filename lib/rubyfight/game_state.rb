@@ -1,4 +1,6 @@
 # 画面状態（index.html の state 文字列と同一）
+require 'rubyfight/graphics'
+
 module Rubyfight
   module GameState
     TITLE = 'TITLE'
@@ -23,7 +25,7 @@ module Rubyfight
 
     # リザルト画面「PRESS SPACE…」の点滅（500ms 周期）
     def self.blink_500ms_primary?(now_ms)
-      (now_ms / 500).floor % 2 == 0
+      Graphics.blink_even_phase?(now_ms, 500)
     end
 
     def self.menu_prev_index(index, menu_size)
