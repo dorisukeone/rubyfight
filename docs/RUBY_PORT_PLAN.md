@@ -76,7 +76,7 @@ rubyfight/
 - [x] `Gemfile` に `opal`（`parser` を `3.2.2.0` にピン留め: macOS 同梱 Ruby 2.6 で `racc` ext を避ける）。
 - [x] `Rakefile`: `rake opal:build` → `build/rubyfight.js`。
 - [x] `lib/rubyfight/main.rb` で `require 'opal'` ＋ `puts` バナー（ブラウザコンソールに表示）。
-- [x] `index.html` が `build/rubyfight.js` を読み込み（ゲーム本体 JS は当面そのまま併存）。
+- [x] `index.html` が **先に** `build/rubyfight.js` を読み込み、`CONFIG` / マスク / `UI_LAYOUT` は Ruby JSON を優先（`RUBYFIGHT_SYNCED` でブリッジ有効化）。
 
 **ビルド手順**
 
@@ -96,34 +96,33 @@ bundle exec rake opal:build
 - [x] Minitest（`bundle exec rake test`）＋ Opal から `window.RUBYFIGHT_*_JSON` 公開＋`index.html` で突合ログ。
 - [x] レイアウト・座標 → `Rubyfight::Layout`（`pixel_to_grid` / `grid_to_tile_center` / 初期スポーン）。`GameConfig` に `FIELD_WIDTH` 等を含め JS 定数と突合。
 - [x] 領土・スコア・三角形判定 → `Rubyfight::Territory`（`point_in_triangle?` / `fill_triangle!` / `calc_scores` / `push_flag`）。
-- [ ] 上記を `index.html` から呼び出しに差し替え、CPU・入力はその次。
-- [ ] フラグ配置・勢力範囲・スコア計算 → `Territory`（既存アルゴリズムをメソッド分割）。
-- [ ] CPU 行動 → `CpuController`（乱数・タイマーは注入可能にするとテストしやすい）。
-- [ ] **単体テスト**（`minitest` / `rspec`）：`bundle exec rake test` でロジックのみ検証可能に。
+- [x] 上記を `index.html` からブリッジ経由で呼び出し（`RUBYFIGHT_SYNCED` 時）。CPU・移動・マッチ・セッション・グラフィックス計算も同様。
+- [x] フラグ配置・スコア・三角形塗り → `Territory` + `Layout` + ブリッジ（`push_flag` / `placeFlag` 相当）。
+- [x] CPU 行動 → `Rubyfight::Cpu`（ターゲット選定・待機秒・乱数は `Random` 注入でテスト可能）。
+- [x] **単体テスト** — `bundle exec rake test`（Minitest、`lib/rubyfight` を MRI で検証）。
 
 ### Phase 2 — 状態機械と入力（2〜3 日）
 
-- [ ] `GameState`: `TITLE` / `PLAY` / `RESULT` と遷移。
+- [x] `GameState`: タイマー・`TITLE` メニュー索引・リザルト待ち・点滅・タイトル決定文字列など（状態文字列は `PLAYING` を維持）。
 - [ ] キー入力: JS 側で `keydown` → Ruby の `Input` オブジェクトを更新するブリッジ（薄い層は JS でも可だが、**反応の解釈は Ruby** に寄せる）。
 
 ### Phase 3 — 描画（最も工数が読める）（4〜10 日）
 
 方針は二段階が現実的。
 
-1. **3a. ハイブリッド（短期）**  
-   - タイル・プレイヤー・UI の `fillRect` / `drawImage` を **JS の小さな `renderer.js`** に残し、Ruby からは「描画コマンドの配列」または **Native 呼び出し**だけ行う。  
-   - 「ロジックは Ruby」は満たすが、見た目のコードは半分 JS。
+1. **3a. ハイブリッド（短期）** — **進行中**  
+   - タイル・プレイヤー・UI の `fillRect` / `drawImage` は **`index.html`**。Ruby は `Graphics`（スプライト枠・シート rect・fit スケール・点滅周期・`UiLayout` JSON 等）を提供。
 
 2. **3b. Canvas ラッパー統合（中期）**  
    - `CanvasBridge` に `fill_rect`, `draw_image`, `draw_text` を集約し、**ゲームコードからは Ruby のみ**。
 
-- [ ] タイトル画面：レイアウト定数は `TitleLayout`（現 `UI_LAYOUT`）。
-- [ ] スプライトシート描画：フレーム index 計算は Ruby、実際の `drawImage` はブリッジ。
+- [x] タイトル画面：レイアウト定数 → `Rubyfight::UiLayout` + `RUBYFIGHT_UI_LAYOUT_JSON`（`index.html` はフォールバック併存）。
+- [x] スプライトシート：フレーム index・セル rect 等は `Graphics`、実際の `drawImage` は Canvas 側。
 
 ### Phase 4 — 仕上げ（2〜3 日）
 
-- [ ] `firebase deploy` 前に `rake opal:build` を CI / 手順に組み込む。
-- [ ] README に「Ruby でビルドして遊ぶ」手順。
+- [ ] `firebase deploy` 前に `rake opal:build` を CI に組み込む（手順・README はあり）。
+- [x] README に「Ruby でビルドして遊ぶ」手順。
 - [ ] パフォーマンス確認（60fps 近く維持できるか。ボトルネックは描画と GC）。
 
 ---
@@ -156,4 +155,4 @@ bundle exec rake opal:build
 ---
 
 *ブランチ: `feat/ruby-port-opal`*  
-*最終更新: 計画策定時点*
+*最終更新: 2026-04（README のフェーズ表と同期）*
