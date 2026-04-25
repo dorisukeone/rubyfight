@@ -2,6 +2,8 @@
 
 RubyKaigi 向けのブラウザ対戦（1P vs CPU / 1P vs 2P）ミニゲームです。
 
+**ブランチ方針:** **`master` が正規ライン**です（`lib/rubyfight/` の Ruby 実装＋Opal で `build/rubyfight.js` を生成し、`index.html` が Canvas ホスト）。GitHub のデフォルトブランチも `master` に揃えています。旧来の「JS のみの本流」は置いていません。
+
 ## コンセプト — あえて Ruby で持つ理由
 
 このリポジトリは **「ブラウザゲームだけど、正本は Ruby」** という置き方をあえて採用しています。
