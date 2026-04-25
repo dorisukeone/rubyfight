@@ -25,6 +25,15 @@ class TerritoryTest < Minitest::Test
     assert_equal 0, s2
   end
 
+  def test_calc_scores_tolerates_nil_mask_row
+    g = Rubyfight::Territory.empty_grid(ROWS, COLS)
+    sparse = MASK.dup
+    sparse[5] = nil
+    s1, s2 = Rubyfight::Territory.calc_scores(g, sparse)
+    assert s1.is_a?(Integer)
+    assert s2.is_a?(Integer)
+  end
+
   def test_fill_triangle_changes_ownership_and_score
     g = Rubyfight::Territory.empty_grid(ROWS, COLS)
     tri = [[10, 8], [12, 8], [11, 10]]

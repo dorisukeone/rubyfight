@@ -25118,7 +25118,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
           if (y == null) {
             y = nil;
           };
-          return $send(row, 'each_with_index', [], ($$9 = function(cell, x){var self = $$9.$$s == null ? this : $$9.$$s;
+          return $send(row, 'each_with_index', [], ($$9 = function(cell, x){var self = $$9.$$s == null ? this : $$9.$$s, $ret_or_9 = nil;
 
           
             
@@ -25129,7 +25129,11 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
             if (x == null) {
               x = nil;
             };
-            if (mask_rows['$[]'](y)['$[]'](x)['$=='](" ")) {
+            if ($truthy((function() {if ($truthy(($ret_or_9 = mask_rows['$[]'](y)['$nil?']()))) {
+              return $ret_or_9
+            } else {
+              return mask_rows['$[]'](y)['$[]'](x)['$=='](" ")
+            }; return nil; })())) {
               return nil;};
             if (cell['$=='](1)) {
               p1 = $rb_plus(p1, 1)};
@@ -25144,7 +25148,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
         var $$11, self = this;
 
         
-        if ($truthy($send(flags, 'any?', [], ($$11 = function(fx, fy){var self = $$11.$$s == null ? this : $$11.$$s, $ret_or_9 = nil;
+        if ($truthy($send(flags, 'any?', [], ($$11 = function(fx, fy){var self = $$11.$$s == null ? this : $$11.$$s, $ret_or_10 = nil;
 
         
           
@@ -25155,10 +25159,10 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
           if (fy == null) {
             fy = nil;
           };
-          if ($truthy(($ret_or_9 = fx['$=='](gx)))) {
+          if ($truthy(($ret_or_10 = fx['$=='](gx)))) {
             return fy['$=='](gy)
           } else {
-            return $ret_or_9
+            return $ret_or_10
           };}, $$11.$$s = self, $$11.$$arity = 2, $$11)))) {
           return nil};
         return $rb_plus(flags, [[gx, gy]]);

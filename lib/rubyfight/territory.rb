@@ -55,7 +55,7 @@ module Rubyfight
       p2 = 0
       grid.each_with_index do |row, y|
         row.each_with_index do |cell, x|
-          next if mask_rows[y][x] == ' '
+          next if mask_rows[y].nil? || mask_rows[y][x] == ' '
 
           p1 += 1 if cell == 1
           p2 += 1 if cell == 2

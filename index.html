@@ -42,14 +42,19 @@
   <canvas id="gameCanvas" width="960" height="540"></canvas>
   <script src="build/rubyfight.js"></script>
   <script>
-    function parseJsonMaybeOpal(val) {
+    function safeParseJsonMaybeOpal(val) {
       if (val == null) return null;
-      if (typeof val === 'string') return JSON.parse(val);
-      if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
-        var w = val.WIDTH;
-        if (typeof w === 'number') return val;
+      try {
+        if (typeof val === 'string') return JSON.parse(val);
+        if (typeof val === 'object' && val !== null && !Array.isArray(val)) {
+          var w = val.WIDTH;
+          if (typeof w === 'number') return val;
+        }
+        return JSON.parse(String(val));
+      } catch (e) {
+        console.warn('[RUBYFIGHT] JSON parse error', e);
+        return null;
       }
-      return JSON.parse(String(val));
     }
 
     // ==========================================
@@ -153,7 +158,6 @@
         }
       }
     };
-    const CONFIG = parseJsonMaybeOpal(window.RUBYFIGHT_CONFIG_JSON) || FALLBACK_CONFIG;
 
     // ==========================================
     // ルビー（ダイヤモンド）型フィールドのマスク定義
@@ -180,7 +184,54 @@
       "            00000000            ", // 16
       "             000000             "  // 17 (最下部)
     ];
-    const FIELD_MASK = parseJsonMaybeOpal(window.RUBYFIGHT_FIELD_MASK_JSON) || FALLBACK_FIELD_MASK;
+
+    const FALLBACK_UI_LAYOUT = {
+      title: {
+        logoCenterX: 480,
+        juggingY: 30,
+        mainTitleY: 108,
+        subRubykaigiY: 172,
+        subTerritoryY: 196,
+        menu: { y: 260 },
+        mascotLeft: { x: 124, y: 308 },
+        mascotRight: { x: 836, y: 308 },
+        mascotPixel: 3,
+        footerControlsY: 466,
+        footerFullscreenY: 486,
+        footerCopyrightY: 508,
+        parts: {
+          background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
+          logo: { x: 136, y: 18, w: 688, h: 252, fit: 'contain' },
+          charLeft: { x: 70, y: 232, w: 208, h: 224, fit: 'contain' },
+          charRight: { x: 682, y: 232, w: 208, h: 224, fit: 'contain' }
+        }
+      }
+    };
+
+    var _rbCfg = safeParseJsonMaybeOpal(window.RUBYFIGHT_CONFIG_JSON);
+    var _rbMask = safeParseJsonMaybeOpal(window.RUBYFIGHT_FIELD_MASK_JSON);
+    var _rbUi = safeParseJsonMaybeOpal(window.RUBYFIGHT_UI_LAYOUT_JSON);
+    var useRubyPageData = false;
+    if (_rbCfg && _rbMask && Array.isArray(_rbMask) &&
+        typeof _rbCfg.GRID_ROWS === 'number' && typeof _rbCfg.GRID_COLS === 'number' &&
+        _rbMask.length === _rbCfg.GRID_ROWS && _rbMask[0] != null &&
+        _rbMask[0].length === _rbCfg.GRID_COLS) {
+      var _maskOk = true;
+      for (var _ri = 0; _ri < _rbMask.length && _maskOk; _ri++) {
+        if (!_rbMask[_ri] || _rbMask[_ri].length !== _rbCfg.GRID_COLS) _maskOk = false;
+      }
+      if (_maskOk) useRubyPageData = true;
+    }
+    if (!useRubyPageData && (window.RUBYFIGHT_CONFIG_JSON != null || window.RUBYFIGHT_FIELD_MASK_JSON != null)) {
+      console.warn('[RUBYFIGHT] Ruby page JSON invalid or inconsistent — using FALLBACK_*; Opal bridges disabled');
+    }
+    const CONFIG = useRubyPageData ? _rbCfg : FALLBACK_CONFIG;
+    const FIELD_MASK = useRubyPageData ? _rbMask : FALLBACK_FIELD_MASK;
+    const UI_LAYOUT = useRubyPageData ? ((_rbUi && _rbUi.title) ? _rbUi : FALLBACK_UI_LAYOUT) : FALLBACK_UI_LAYOUT;
+    if (useRubyPageData && window.RUBYFIGHT_UI_LAYOUT_JSON != null && (!_rbUi || !_rbUi.title)) {
+      console.warn('[RUBYFIGHT] UI_LAYOUT JSON invalid; using FALLBACK_UI_LAYOUT with Ruby CONFIG');
+    }
+    window.RUBYFIGHT_SYNCED = !!useRubyPageData;
 
     // ==========================================
     // グローバル変数・状態管理
@@ -269,33 +320,6 @@
       "     000000000000000000000000   ",
       "                                "
     ];
-
-    // ==========================================
-    // UI レイアウト（Ruby UiLayout を優先）
-    // ==========================================
-    const FALLBACK_UI_LAYOUT = {
-      title: {
-        logoCenterX: 480,
-        juggingY: 30,
-        mainTitleY: 108,
-        subRubykaigiY: 172,
-        subTerritoryY: 196,
-        menu: { y: 260 },
-        mascotLeft: { x: 124, y: 308 },
-        mascotRight: { x: 836, y: 308 },
-        mascotPixel: 3,
-        footerControlsY: 466,
-        footerFullscreenY: 486,
-        footerCopyrightY: 508,
-        parts: {
-          background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
-          logo: { x: 136, y: 18, w: 688, h: 252, fit: 'contain' },
-          charLeft: { x: 70, y: 232, w: 208, h: 224, fit: 'contain' },
-          charRight: { x: 682, y: 232, w: 208, h: 224, fit: 'contain' }
-        }
-      }
-    };
-    const UI_LAYOUT = parseJsonMaybeOpal(window.RUBYFIGHT_UI_LAYOUT_JSON) || FALLBACK_UI_LAYOUT;
 
     // タイトル左：赤ビーン風マスコット（0:輪郭 R:体 W:顔 b:目）
     const TITLE_SPRITE_RED = [
@@ -634,7 +658,7 @@
     function clampSheetSource(img, sx, sy, sw, sh) {
       const iw = img.naturalWidth;
       const ih = img.naturalHeight;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxClampSheetSource === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxClampSheetSource === 'function') {
         const r = window.RUBYFIGHT.gfxClampSheetSource(iw, ih, sx, sy, sw, sh);
         return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
       }
@@ -656,7 +680,7 @@
     }
 
     function getUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex) {
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxUniformSpriteFrameRect === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxUniformSpriteFrameRect === 'function') {
         const r = window.RUBYFIGHT.gfxUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex);
         return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
       }
@@ -676,7 +700,7 @@
       const { x, y, w, h } = rect;
       const fit = rect.fit || 'contain';
       let scale;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
         scale = window.RUBYFIGHT.gfxSpriteFitScale(sw, sh, w, h, fit);
       } else {
         scale = fit === 'cover' ? Math.max(w / sw, h / sh) : Math.min(w / sw, h / sh);
@@ -699,7 +723,7 @@
       const start = S.frameStart != null ? S.frameStart : 0;
       const count = S.frameCount != null ? S.frameCount : total;
       let f;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxTitleCharFrameIndex === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxTitleCharFrameIndex === 'function') {
         f = window.RUBYFIGHT.gfxTitleCharFrameIndex(Date.now(), fps, start, count, cols, rows);
       } else {
         const tick = Math.floor(Date.now() / (1000 / fps));
@@ -733,7 +757,7 @@
       const { x, y, w, h } = rect;
       const fit = rect.fit || 'contain';
       let scale;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
         scale = window.RUBYFIGHT.gfxSpriteFitScale(iw, ih, w, h, fit);
       } else if (fit === 'cover') {
         scale = Math.max(w / iw, h / ih);
@@ -752,7 +776,7 @@
       const g = S.gridRect;
       const img = assetSheetImg;
       if (!img || !img.naturalWidth) return g;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxScaleGridRectToImage === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxScaleGridRectToImage === 'function') {
         const r = window.RUBYFIGHT.gfxScaleGridRectToImage(
           g.x, g.y, g.w, g.h,
           img.naturalWidth, img.naturalHeight,
@@ -776,7 +800,7 @@
       const cols = S.cols;
       const rows = S.rows;
       const ins = S.cellInset || 0;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxSheetCellRect === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSheetCellRect === 'function') {
         const r = window.RUBYFIGHT.gfxSheetCellRect(g.x, g.y, g.w, g.h, cols, rows, col, row, ins);
         return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
       }
@@ -807,7 +831,7 @@
       const { x, y, w, h } = rect;
       const fit = rect.fit || 'contain';
       let scale;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
         scale = window.RUBYFIGHT.gfxSpriteFitScale(sw, sh, w, h, fit);
       } else {
         scale = fit === 'cover'
@@ -846,7 +870,7 @@
     }
 
     function sheetCellPair(name) {
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxAssetSheetCellPair === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxAssetSheetCellPair === 'function') {
         return window.RUBYFIGHT.gfxAssetSheetCellPair(name);
       }
       const c = CONFIG.ASSET_SHEET.cells[name];
@@ -1025,7 +1049,7 @@
           return;
         }
         if (code === 'ArrowUp' || code === 'KeyW') {
-          if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateMenuPrevIndex === 'function') {
+          if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateMenuPrevIndex === 'function') {
             titleMenuIndex = window.RUBYFIGHT.gameStateMenuPrevIndex(titleMenuIndex, 4);
           } else {
             titleMenuIndex = (titleMenuIndex + 3) % 4;
@@ -1034,7 +1058,7 @@
           return;
         }
         if (code === 'ArrowDown' || code === 'KeyS') {
-          if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateMenuNextIndex === 'function') {
+          if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateMenuNextIndex === 'function') {
             titleMenuIndex = window.RUBYFIGHT.gameStateMenuNextIndex(titleMenuIndex, 4);
           } else {
             titleMenuIndex = (titleMenuIndex + 1) % 4;
@@ -1043,7 +1067,7 @@
           return;
         }
         if (code === 'Space' || code === 'Enter') {
-          if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateTitleConfirmAction === 'function') {
+          if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateTitleConfirmAction === 'function') {
             const act = window.RUBYFIGHT.gameStateTitleConfirmAction(titleMenuIndex);
             if (act === 'vs_cpu') {
               mode = 1;
@@ -1084,7 +1108,7 @@
         }
       } else if (state === 'RESULT') {
         let canLeaveResult = false;
-        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateCanAdvanceFromResult === 'function') {
+        if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateCanAdvanceFromResult === 'function') {
           canLeaveResult = window.RUBYFIGHT.gameStateCanAdvanceFromResult(Date.now(), stateStartTime);
         } else {
           canLeaveResult = Date.now() - stateStartTime > 2000;
@@ -1106,7 +1130,7 @@
     function startGame() {
       state = 'PLAYING';
       stateStartTime = Date.now();
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionInitialTimeRemaining === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.sessionInitialTimeRemaining === 'function') {
         timeRemaining = window.RUBYFIGHT.sessionInitialTimeRemaining();
       } else {
         timeRemaining = CONFIG.GAME_TIME;
@@ -1115,7 +1139,7 @@
 
       flags1 = [];
       flags2 = [];
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionBootstrapGrids === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.sessionBootstrapGrids === 'function') {
         const pair = window.RUBYFIGHT.sessionBootstrapGrids();
         grid = pair[0];
         effectGrid = pair[1];
@@ -1132,13 +1156,13 @@
         }
       }
 
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionP1Spawn === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.sessionP1Spawn === 'function') {
         const s1 = window.RUBYFIGHT.sessionP1Spawn();
         p1 = { x: s1[0], y: s1[1] };
       } else {
         p1 = { x: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
       }
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.sessionP2Spawn === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.sessionP2Spawn === 'function') {
         const s2 = window.RUBYFIGHT.sessionP2Spawn();
         p2 = { x: s2[0], y: s2[1] };
       } else {
@@ -1152,7 +1176,7 @@
     }
 
     function isValidPosition(px, py) {
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.layoutIsValidPosition === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.layoutIsValidPosition === 'function') {
         return !!window.RUBYFIGHT.layoutIsValidPosition(px, py, FIELD_MASK);
       }
       const r = (CONFIG.PLAYER_SIZE / 2) - 2; 
@@ -1172,7 +1196,7 @@
     }
 
     function clamp(val, min, max) {
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxClamp === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxClamp === 'function') {
         return window.RUBYFIGHT.gfxClamp(val, min, max);
       }
       return Math.max(min, Math.min(max, val));
@@ -1180,7 +1204,7 @@
 
     function placeFlag(p, playerId) {
       let gx, gy;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.layoutPixelToGrid === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.layoutPixelToGrid === 'function') {
         const g = window.RUBYFIGHT.layoutPixelToGrid(p.x, p.y);
         gx = g[0];
         gy = g[1];
@@ -1194,7 +1218,7 @@
 
       const flags = playerId === 1 ? flags1 : flags2;
 
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.territoryPushFlag === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.territoryPushFlag === 'function') {
         const pairs = flags.map(function (f) { return [f.gx, f.gy]; });
         const nextPairs = window.RUBYFIGHT.territoryPushFlag(pairs, gx, gy);
         if (nextPairs === null) return;
@@ -1233,7 +1257,7 @@
       const [p0, p1, p2] = flags;
       let filledCount = 0;
 
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.territoryFillTriangle === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.territoryFillTriangle === 'function') {
         const gridBefore = grid.map(function (row) { return row.slice(); });
         filledCount = window.RUBYFIGHT.territoryFillTriangle(
           grid, playerId,
@@ -1275,7 +1299,7 @@
     }
 
     function isPointInTriangle(px, py, x0, y0, x1, y1, x2, y2) {
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.territoryPointInTriangle === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.territoryPointInTriangle === 'function') {
         return !!window.RUBYFIGHT.territoryPointInTriangle(px, py, x0, y0, x1, y1, x2, y2);
       }
       const d = (y1 - y2) * (x0 - x2) + (x2 - x1) * (y0 - y2);
@@ -1290,7 +1314,7 @@
     }
 
     function calcScore() {
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.territoryCalcScores === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.territoryCalcScores === 'function') {
         const s = window.RUBYFIGHT.territoryCalcScores(grid, FIELD_MASK);
         p1Score = s[0];
         p2Score = s[1];
@@ -1309,7 +1333,7 @@
 
     function update(dt) {
       if (state === 'PLAYING') {
-        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateTickPlaying === 'function') {
+        if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateTickPlaying === 'function') {
           const tick = window.RUBYFIGHT.gameStateTickPlaying(timeRemaining, dt);
           timeRemaining = tick[0];
           if (tick[1]) {
@@ -1330,7 +1354,7 @@
         }
 
         let currentSpeed;
-        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.moveSpeedForTimeRemaining === 'function') {
+        if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.moveSpeedForTimeRemaining === 'function') {
           currentSpeed = window.RUBYFIGHT.moveSpeedForTimeRemaining(timeRemaining);
         } else {
           currentSpeed = timeRemaining <= CONFIG.RUSH_TIME
@@ -1376,7 +1400,7 @@
             cpuWaitTimer -= dt;
           } else {
             if (!cpuTarget) {
-              if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuPickTarget === 'function') {
+              if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuPickTarget === 'function') {
                 const t = window.RUBYFIGHT.cpuPickTarget(grid, FIELD_MASK);
                 if (t) {
                   cpuTarget = { x: t[0], y: t[1] };
@@ -1406,14 +1430,14 @@
               let dy2 = cpuTarget.y - p2.y;
               const dist = Math.sqrt(dx2 * dx2 + dy2 * dy2);
               let cpuSpeed;
-              if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining === 'function') {
+              if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining === 'function') {
                 cpuSpeed = window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining(timeRemaining);
               } else {
                 cpuSpeed = currentSpeed * CONFIG.CPU_SPEED_MULTIPLIER;
               }
 
               let cpuArrived = false;
-              if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuReachedTarget === 'function') {
+              if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuReachedTarget === 'function') {
                 cpuArrived = window.RUBYFIGHT.cpuReachedTarget(dist, cpuSpeed, dt);
               } else {
                 cpuArrived = dist < cpuSpeed * dt || dist < 5;
@@ -1423,7 +1447,7 @@
                 p2.y = cpuTarget.y;
                 placeFlag(p2, 2);
                 cpuTarget = null;
-                if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuWaitAfterFlagSec === 'function') {
+                if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuWaitAfterFlagSec === 'function') {
                   cpuWaitTimer = window.RUBYFIGHT.cpuWaitAfterFlagSec();
                 } else {
                   cpuWaitTimer = 0.1 + Math.random() * 0.2;
@@ -1447,12 +1471,12 @@
                 // ★ CPUが壁に引っかかって完全にスタックした場合はターゲットを取り直す
                 if (!movedX && !movedY) {
                    cpuTarget = null;
-                   if (window.RUBYFIGHT && typeof window.RUBYFIGHT.cpuWaitAfterStuckSec === 'function') {
+                   if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuWaitAfterStuckSec === 'function') {
                      cpuWaitTimer = window.RUBYFIGHT.cpuWaitAfterStuckSec();
                    } else {
                      cpuWaitTimer = 0.3;
                    }
-                   if (window.RUBYFIGHT && typeof window.RUBYFIGHT.nudgeTowardFieldCenter === 'function') {
+                   if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.nudgeTowardFieldCenter === 'function') {
                      const np = window.RUBYFIGHT.nudgeTowardFieldCenter(p2.x, p2.y);
                      p2.x = np[0];
                      p2.y = np[1];
@@ -1732,7 +1756,7 @@
       ctx.fillText(`${p2Label}:${p2Score.toString().padStart(3, '0')}`, CONFIG.WIDTH - 14, 48);
 
       let timerColor = gold;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.rushHudBlinkPrimary === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.rushHudBlinkPrimary === 'function') {
         if (window.RUBYFIGHT.rushHudBlinkPrimary(timeRemaining, Date.now())) {
           timerColor = CONFIG.COLORS.p1.tile;
         }
@@ -1823,7 +1847,7 @@
       ctx.font = '9px "Press Start 2P", monospace';
       ctx.fillStyle = '#ffaaaa';
       let blink = false;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gfxBlinkEvenPhase === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxBlinkEvenPhase === 'function') {
         blink = window.RUBYFIGHT.gfxBlinkEvenPhase(Date.now(), 400);
       } else {
         blink = Math.floor(Date.now() / 400) % 2 === 0;
@@ -1904,7 +1928,7 @@
       ctx.font = '32px "Press Start 2P", monospace';
       let msg;
       let tone;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.matchResultHeadline === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.matchResultHeadline === 'function') {
         msg = window.RUBYFIGHT.matchResultHeadline(p1Score, p2Score, mode === 1);
         tone = window.RUBYFIGHT.matchResultTone
           ? window.RUBYFIGHT.matchResultTone(p1Score, p2Score)
@@ -1935,7 +1959,7 @@
       ctx.fillText(msg, CONFIG.WIDTH / 2, 260);
 
       let canShowReturn = false;
-      if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateCanAdvanceFromResult === 'function') {
+      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateCanAdvanceFromResult === 'function') {
         canShowReturn = window.RUBYFIGHT.gameStateCanAdvanceFromResult(Date.now(), stateStartTime);
       } else {
         canShowReturn = Date.now() - stateStartTime > 2000;
@@ -1943,7 +1967,7 @@
       if (canShowReturn) {
         ctx.font = '16px "Press Start 2P", monospace';
         let blinkOn = true;
-        if (window.RUBYFIGHT && typeof window.RUBYFIGHT.gameStateBlink500msPrimary === 'function') {
+        if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateBlink500msPrimary === 'function') {
           blinkOn = window.RUBYFIGHT.gameStateBlink500msPrimary(Date.now());
         } else {
           blinkOn = Math.floor(Date.now() / 500) % 2 === 0;
@@ -1970,7 +1994,15 @@
           console.warn('[RUBYFIGHT] RUBYFIGHT_CONFIG_JSON missing — using FALLBACK_* (add build/rubyfight.js)');
           return;
         }
-        var rb = parseJsonMaybeOpal(window.RUBYFIGHT_CONFIG_JSON);
+        if (!window.RUBYFIGHT_SYNCED) {
+          console.warn('[RUBYFIGHT] Page data not synced to Ruby JSON — skip deep verify (see boot warnings)');
+          return;
+        }
+        var rb = safeParseJsonMaybeOpal(window.RUBYFIGHT_CONFIG_JSON);
+        if (!rb) {
+          console.error('[RUBYFIGHT] verify: CONFIG JSON re-parse failed');
+          return;
+        }
         var keys = ['WIDTH', 'HEIGHT', 'TILE_SIZE', 'GRID_COLS', 'GRID_ROWS', 'GAME_TIME', 'RUSH_TIME'];
         for (var i = 0; i < keys.length; i++) {
           var k = keys[i];
@@ -1986,7 +2018,7 @@
             return;
           }
         }
-        var fm = parseJsonMaybeOpal(window.RUBYFIGHT_FIELD_MASK_JSON);
+        var fm = safeParseJsonMaybeOpal(window.RUBYFIGHT_FIELD_MASK_JSON);
         if (!Array.isArray(fm) || fm.length !== FIELD_MASK.length) {
           console.error('[RUBYFIGHT] FIELD_MASK length mismatch', fm && fm.length, FIELD_MASK.length);
           return;
@@ -1998,7 +2030,7 @@
           }
         }
         if (window.RUBYFIGHT_UI_LAYOUT_JSON != null) {
-          var ru = parseJsonMaybeOpal(window.RUBYFIGHT_UI_LAYOUT_JSON);
+          var ru = safeParseJsonMaybeOpal(window.RUBYFIGHT_UI_LAYOUT_JSON);
           if (!ru || !ru.title || ru.title.logoCenterX !== UI_LAYOUT.title.logoCenterX) {
             console.error('[RUBYFIGHT] UI_LAYOUT mismatch', ru && ru.title, UI_LAYOUT && UI_LAYOUT.title);
             return;

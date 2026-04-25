@@ -65,6 +65,8 @@ firebase deploy
   → `Gemfile` の `parser` バージョンを確認（`3.2.2.0` 固定）。Ruby 3 系では Opal を上げる選択肢もあります。
 - **コンソールに CONFIG 不一致**  
   → `lib/rubyfight/game_config.rb` と `index.html` のフォールバック定数がずれていないか、`rake` で再ビルドしたか確認してください。
+- **`RUBYFIGHT_SYNCED` が false / Opal ブリッジが効かない**  
+  → `RUBYFIGHT_*_JSON` のパース失敗やマスク行数・列数の不整合があると、ページは `FALLBACK_*` のみ使い、**ゲーム用ブリッジはオフ**になります（純 JS フォールバックで動作）。コンソールの `[RUBYFIGHT] Ruby page JSON invalid...` を確認してください。
 
 ---
 
