@@ -36,6 +36,8 @@ class GraphicsTest < Minitest::Test
     g = Rubyfight::Graphics
     assert_operator g.sprite_fit_scale(10, 10, 100, 50, 'cover'), :>=, 5
     assert_operator g.sprite_fit_scale(10, 10, 100, 50, 'contain'), :<=, 5
+    assert_in_delta g.sprite_fit_scale(10, 10, 100, 50, 'contain'),
+      g.sprite_fit_scale(10, 10, 100, 50, nil), 1e-9
   end
 
   def test_clamp_sheet_source

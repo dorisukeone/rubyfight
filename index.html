@@ -680,12 +680,13 @@
     }
 
     function getUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex) {
+      const fi = Math.max(0, Math.floor(Number(frameIndex)) || 0);
       if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxUniformSpriteFrameRect === 'function') {
-        const r = window.RUBYFIGHT.gfxUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex);
+        const r = window.RUBYFIGHT.gfxUniformSpriteFrameRect(imgW, imgH, cols, rows, fi);
         return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
       }
-      const col = frameIndex % cols;
-      const row = Math.floor(frameIndex / cols);
+      const col = fi % cols;
+      const row = Math.floor(fi / cols);
       const baseW = Math.floor(imgW / cols);
       const baseH = Math.floor(imgH / rows);
       const sx = col * baseW;
@@ -716,12 +717,12 @@
       if (!S || !S.url || !img) return;
       const { w, h } = drawableSize(img);
       if (!w || !h) return;
-      const cols = S.cols || 4;
-      const rows = S.rows || 4;
+      const cols = Math.max(1, Math.floor(Number(S.cols)) || 4);
+      const rows = Math.max(1, Math.floor(Number(S.rows)) || 4);
       const total = cols * rows;
-      const fps = S.fps || 6;
-      const start = S.frameStart != null ? S.frameStart : 0;
-      const count = S.frameCount != null ? S.frameCount : total;
+      const fps = Math.max(0.001, Number(S.fps)) || 6;
+      const start = Math.max(0, Math.floor(Number(S.frameStart != null ? S.frameStart : 0)));
+      const count = Math.max(1, Math.floor(Number(S.frameCount != null ? S.frameCount : total)));
       let f;
       if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxTitleCharFrameIndex === 'function') {
         f = window.RUBYFIGHT.gfxTitleCharFrameIndex(Date.now(), fps, start, count, cols, rows);
@@ -729,6 +730,7 @@
         const tick = Math.floor(Date.now() / (1000 / fps));
         f = Math.min(start + (tick % Math.max(1, count)), total - 1);
       }
+      f = Math.max(0, Math.floor(Number(f)) || 0);
       const { sx, sy, sw, sh } = getUniformSpriteFrameRect(w, h, cols, rows, f);
       drawSpriteFrameInRect(img, sx, sy, sw, sh, rect);
     }
@@ -1981,10 +1983,16 @@
     // メインループ
     // ==========================================
     function gameLoop(now) {
-      const dt = (now - lastTime) / 1000;
+      const rawDt = (now - lastTime) / 1000;
       lastTime = now;
-      update(dt);
-      draw();
+      // タブ復帰・デバッガー一時停止で rawDt が数秒以上になり、1 回で TIME UP になるのを防ぐ
+      const dt = Math.min(Math.max(rawDt, 0), 0.1);
+      try {
+        update(dt);
+        draw();
+      } catch (e) {
+        console.error('[RUBYFIGHT] main loop (update/draw) failed — loop continues', e);
+      }
       requestAnimationFrame(gameLoop);
     }
 

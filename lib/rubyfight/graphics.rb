@@ -44,7 +44,9 @@ module Rubyfight
     end
 
     def self.sprite_fit_scale(sw, sh, box_w, box_h, fit)
-      if fit.to_s == 'cover'
+      # JS から素の String / nil が渡る。Opal 外の値で to_s が例外になるのを避ける
+      f = (fit == nil) ? 'contain' : fit.to_s
+      if f == 'cover'
         [box_w.to_f / sw, box_h.to_f / sh].max
       else
         [box_w.to_f / sw, box_h.to_f / sh].min
