@@ -19,11 +19,23 @@ class GraphicsTest < Minitest::Test
   end
 
   def test_uniform_sprite_frame
-    sx, sy, sw, sh = Rubyfight::Graphics.uniform_sprite_frame_rect(100, 80, 3, 2, 4)
-    assert_equal 33, sx
+    # 100/3: 先頭列に 1px 多く割り当て (34+33+33) — index.html の cellAxisStartsAndSizes と一致
+    sx, sy, sw, sh = Rubyfight::Graphics.uniform_sprite_frame_rect(100, 80, 3, 2, 4, 'row')
+    assert_equal 34, sx
     assert_equal 40, sy
     assert_equal 33, sw
     assert_equal 40, sh
+  end
+
+  def test_uniform_sprite_frame_column
+    g = Rubyfight::Graphics
+    # 2x2, 列メジャー: 0(0,0) 1(0,1) 2(1,0) 3(1,1)
+    sx, sy, = g.uniform_sprite_frame_rect(100, 100, 2, 2, 0, 'column')
+    assert_equal [0, 0], [sx, sy]
+    sx, sy, = g.uniform_sprite_frame_rect(100, 100, 2, 2, 1, 'column')
+    assert_equal [0, 50], [sx, sy]
+    sx, sy, = g.uniform_sprite_frame_rect(100, 100, 2, 2, 2, 'column')
+    assert_equal [50, 0], [sx, sy]
   end
 
   def test_title_char_frame_wraps

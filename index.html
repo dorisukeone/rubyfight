@@ -36,6 +36,9 @@
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
       background-color: #2e0f0f; /* デフォルト背景（赤系） */
     }
+    #gameCanvas:focus {
+      outline: none;
+    }
   </style>
 </head>
 <body>
@@ -71,8 +74,10 @@
       // プレイヤー設定
       PLAYER_SIZE: 28, 
       BASE_SPEED: 160, 
-      SPEED_UP_MULTIPLIER: 1.3, 
-      CPU_SPEED_MULTIPLIER: 1.15, 
+      SPEED_UP_MULTIPLIER: 1.4, 
+      CPU_SPEED_MULTIPLIER: 1.42,
+      // 描画用の遅延追従（0=無効で論理座標と同一表示。12〜20 でなめらか。不正値は 0 扱い）
+      PLAYER_VIS_SMOOTH: 0,
       
       // カラーパレット（全体を赤ベースに変更、P1を赤・P2を青に）
       COLORS: {
@@ -92,8 +97,8 @@
         hudGoldDim: '#c98a2c'
       },
 
-      GAME_TIME: 60,         
-      RUSH_TIME: 10,         
+      GAME_TIME: 55,         
+      RUSH_TIME: 15,         
 
       // タイトル：デザインを分割した PNG（空文字 = 未使用。手前は Canvas フォントでメニュー・説明）
       // 例: assets/title/bg.png, logo.png, char_left.png, char_right.png
@@ -108,26 +113,28 @@
       LOGO_REMOVE_EDGE_BLACK: true,
       LOGO_KEY_MAX_RGB: 32,
 
-      // タイトル左・赤キャラ 4×4 スプライトシート（空で無効。frameStart/Count でループ範囲、省略時は全コマ）
+      // タイトル左・赤: 幅%cols==0, 高さ%rows==0 必須。frameCount は先頭行から順に使うコマ数（1=静止）
       TITLE_CHAR_RED_SHEET: {
         url: 'assets/title/char_red_sheet.png',
         cols: 4,
         rows: 4,
+        frameLayout: 'row',
         fps: 6,
         frameStart: 0,
-        frameCount: 16,
+        frameCount: 4,
         removeEdgeBlack: true,
         keyMaxRgb: 32
       },
 
-      // タイトル右・青キャラ 4×4（ベタ黒背景は removeMatte で透過。RGBA 直読みなら removeMatte: false）
+      // タイトル右・青
       TITLE_CHAR_BLUE_SHEET: {
         url: 'assets/title/char_blue_sheet.png',
         cols: 4,
         rows: 4,
+        frameLayout: 'row',
         fps: 6,
         frameStart: 0,
-        frameCount: 16,
+        frameCount: 4,
         removeEdgeBlack: false,
         removeMatte: true,
         matteDarkMax: 40,
@@ -202,8 +209,8 @@
         parts: {
           background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
           logo: { x: 136, y: 18, w: 688, h: 252, fit: 'contain' },
-          charLeft: { x: 70, y: 232, w: 208, h: 224, fit: 'contain' },
-          charRight: { x: 682, y: 232, w: 208, h: 224, fit: 'contain' }
+          charLeft: { x: 70, y: 232, w: 208, h: 224, fit: 'contain', vAlign: 'bottom' },
+          charRight: { x: 682, y: 232, w: 208, h: 224, fit: 'contain', vAlign: 'bottom' }
         }
       }
     };
@@ -237,8 +244,23 @@
     // グローバル変数・状態管理
     // ==========================================
     const canvas = document.getElementById('gameCanvas');
+    canvas.tabIndex = 0;
+    canvas.setAttribute('aria-label', 'RUBYFIGHT');
+    canvas.addEventListener('mousedown', function () { canvas.focus({ preventScroll: true }); });
+    canvas.addEventListener('touchstart', function () { canvas.focus({ preventScroll: true }); }, { passive: true });
     const ctx = canvas.getContext('2d');
-    
+    ctx.imageSmoothingEnabled = false;
+    if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'low';
+
+    /** 9 引数 drawImage。描画先・元矩形を Math.round してサブピクセル補間の「ぬるっと感」を防ぐ */
+    function drawImage9Int(img, sx, sy, sw, sh, dx, dy, dw, dh) {
+      ctx.drawImage(
+        img,
+        Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh),
+        Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh)
+      );
+    }
+
     const FIELD_WIDTH = CONFIG.TILE_SIZE * CONFIG.GRID_COLS;   
     const FIELD_HEIGHT = CONFIG.TILE_SIZE * CONFIG.GRID_ROWS;  
     const OFFSET_X = (CONFIG.WIDTH - FIELD_WIDTH) / 2;         
@@ -262,6 +284,9 @@
     
     let p1 = { x: 0, y: 0 };
     let p2 = { x: 0, y: 0 };
+    /** 描画だけに使う。placeFlag 等の論理座標は p1/p2 */
+    let p1Vis = { x: 0, y: 0 };
+    let p2Vis = { x: 0, y: 0 };
     
     let flags1 = []; 
     let flags2 = []; 
@@ -521,6 +546,7 @@
       canvas.width = w;
       canvas.height = h;
       const c2d = canvas.getContext('2d');
+      c2d.imageSmoothingEnabled = false;
       c2d.drawImage(img, 0, 0);
       const imageData = c2d.getImageData(0, 0, w, h);
       const d = imageData.data;
@@ -586,6 +612,7 @@
       canvas.width = w;
       canvas.height = h;
       const c2d = canvas.getContext('2d');
+      c2d.imageSmoothingEnabled = false;
       c2d.drawImage(img, 0, 0);
       const imageData = c2d.getImageData(0, 0, w, h);
       const d = imageData.data;
@@ -655,13 +682,10 @@
       });
     }
 
+    // Canvas 描画用の幾何は常に下記 JS のみ（Opal 橋の Float 微差でサブピクセルに寄り「スライド」するのを防ぐ。Ruby の定義は MRI テスト用）
     function clampSheetSource(img, sx, sy, sw, sh) {
       const iw = img.naturalWidth;
       const ih = img.naturalHeight;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxClampSheetSource === 'function') {
-        const r = window.RUBYFIGHT.gfxClampSheetSource(iw, ih, sx, sy, sw, sh);
-        return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
-      }
       let x = sx;
       let y = sy;
       let w = sw;
@@ -679,20 +703,44 @@
       return { sx: x, sy: y, sw: Math.max(0, w), sh: Math.max(0, h) };
     }
 
-    function getUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex) {
-      const fi = Math.max(0, Math.floor(Number(frameIndex)) || 0);
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxUniformSpriteFrameRect === 'function') {
-        const r = window.RUBYFIGHT.gfxUniformSpriteFrameRect(imgW, imgH, cols, rows, fi);
-        return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
+    /** 余りピクセルを先頭セル列に加算（従来の「最後の列が全部飲む」だと隣接コマで 1px 揺れやすい） */
+    function cellAxisStartsAndSizes(total, n) {
+      const c = Math.max(1, Math.floor(n));
+      const t = Math.max(0, Math.floor(total));
+      const base = Math.floor(t / c);
+      const rem = t % c;
+      const sizes = [];
+      for (let i = 0; i < c; i++) {
+        sizes.push(base + (i < rem ? 1 : 0));
       }
-      const col = fi % cols;
-      const row = Math.floor(fi / cols);
-      const baseW = Math.floor(imgW / cols);
-      const baseH = Math.floor(imgH / rows);
-      const sx = col * baseW;
-      const sy = row * baseH;
-      const sw = col === cols - 1 ? imgW - sx : baseW;
-      const sh = row === rows - 1 ? imgH - sy : baseH;
+      const starts = [];
+      let acc = 0;
+      for (let i = 0; i < c; i++) {
+        starts.push(acc);
+        acc += sizes[i];
+      }
+      return { starts, sizes };
+    }
+
+    function getUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex, frameLayout) {
+      const fi = Math.max(0, Math.floor(Number(frameIndex)) || 0);
+      const fl = (frameLayout != null && String(frameLayout) !== '') ? String(frameLayout) : 'row';
+      const nc = Math.max(1, Math.floor(cols) || 1);
+      const nr = Math.max(1, Math.floor(rows) || 1);
+      let col; let row;
+      if (fl === 'column' || fl === 'column_major') {
+        col = Math.floor(fi / nr);
+        row = fi % nr;
+      } else {
+        col = fi % nc;
+        row = Math.floor(fi / nc);
+      }
+      const colAxis = cellAxisStartsAndSizes(imgW, nc);
+      const rowAxis = cellAxisStartsAndSizes(imgH, nr);
+      const sx = colAxis.starts[col] || 0;
+      const sy = rowAxis.starts[row] || 0;
+      const sw = colAxis.sizes[col] || 0;
+      const sh = rowAxis.sizes[row] || 0;
       return { sx, sy, sw, sh };
     }
 
@@ -700,17 +748,28 @@
       if (!img || sw <= 0 || sh <= 0) return;
       const { x, y, w, h } = rect;
       const fit = rect.fit || 'contain';
+      const vAlign = rect.vAlign || 'center';
+      const fstr = String(fit || 'contain');
+      const u = rect.uniformSourceCell;
       let scale;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
-        scale = window.RUBYFIGHT.gfxSpriteFitScale(sw, sh, w, h, fit);
+      if (u && isFinite(u.w) && isFinite(u.h) && u.w > 0 && u.h > 0) {
+        // 1 グリッドセル分の基準寸法で拡大率を共通化（各コマの sw/sh 差で足元・中心が毎フレームずれないようにする）
+        scale = fstr === 'cover' ? Math.max(w / u.w, h / u.h) : Math.min(w / u.w, h / u.h);
       } else {
-        scale = fit === 'cover' ? Math.max(w / sw, h / sh) : Math.min(w / sw, h / sh);
+        scale = fstr === 'cover' ? Math.max(w / sw, h / sh) : Math.min(w / sw, h / sh);
       }
       const dw = sw * scale;
       const dh = sh * scale;
       const dx = x + (w - dw) / 2;
-      const dy = y + (h - dh) / 2;
-      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      let dy;
+      if (vAlign === 'bottom') {
+        dy = y + h - dh;
+      } else if (vAlign === 'top') {
+        dy = y;
+      } else {
+        dy = y + (h - dh) / 2;
+      }
+      drawImage9Int(img, sx, sy, sw, sh, dx, dy, dw, dh);
     }
 
     function drawTitleCharSpriteSheet(img, S, rect) {
@@ -719,20 +778,33 @@
       if (!w || !h) return;
       const cols = Math.max(1, Math.floor(Number(S.cols)) || 4);
       const rows = Math.max(1, Math.floor(Number(S.rows)) || 4);
+      if (!img._rbTitleCharGridCheck) {
+        img._rbTitleCharGridCheck = true;
+        const rw = w % cols;
+        const rh = h % rows;
+        // 余り 1〜2px は先頭列・行に寄せる実装（getUniformSpriteFrameRect）で吸収。大きいズレだけ警告
+        if (rw > 2 || rh > 2) {
+          console.warn(
+            '[RUBYFIGHT] タイトル用スプライトシートのピクセル幅・高さが cols/rows に対して大きく割り切れません。切り出し枠のズレで揺れます。',
+            { width: w, height: h, cols, rows, widthRemainder: rw, heightRemainder: rh },
+            '例: 4x4 なら幅・高さを 4 の倍数に揃えるか、cols/rows を実寸に合わせてください。'
+          );
+        }
+      }
       const total = cols * rows;
       const fps = Math.max(0.001, Number(S.fps)) || 6;
       const start = Math.max(0, Math.floor(Number(S.frameStart != null ? S.frameStart : 0)));
       const count = Math.max(1, Math.floor(Number(S.frameCount != null ? S.frameCount : total)));
-      let f;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxTitleCharFrameIndex === 'function') {
-        f = window.RUBYFIGHT.gfxTitleCharFrameIndex(Date.now(), fps, start, count, cols, rows);
-      } else {
-        const tick = Math.floor(Date.now() / (1000 / fps));
-        f = Math.min(start + (tick % Math.max(1, count)), total - 1);
-      }
+      const tick = Math.floor(Date.now() / (1000 / fps));
+      let f = Math.min(start + (tick % Math.max(1, count)), total - 1);
       f = Math.max(0, Math.floor(Number(f)) || 0);
-      const { sx, sy, sw, sh } = getUniformSpriteFrameRect(w, h, cols, rows, f);
-      drawSpriteFrameInRect(img, sx, sy, sw, sh, rect);
+      const frameLayout = (S.frameLayout != null && S.frameLayout !== '') ? S.frameLayout : 'row';
+      const { sx, sy, sw, sh } = getUniformSpriteFrameRect(w, h, cols, rows, f, frameLayout);
+      // 枠内は水平中心・下辺＝足元。uniformSourceCell でシート 1 マス分の拡大率に固定しコマ切り替えのズレを抑える
+      const uW = w / cols;
+      const uH = h / rows;
+      const r = { ...rect, vAlign: 'bottom', fit: rect.fit != null ? rect.fit : 'contain', uniformSourceCell: { w: uW, h: uH } };
+      drawSpriteFrameInRect(img, sx, sy, sw, sh, r);
     }
 
     function drawTitleCharRedSpriteSheet(rect) {
@@ -758,19 +830,21 @@
       if (!iw || !ih) return;
       const { x, y, w, h } = rect;
       const fit = rect.fit || 'contain';
-      let scale;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
-        scale = window.RUBYFIGHT.gfxSpriteFitScale(iw, ih, w, h, fit);
-      } else if (fit === 'cover') {
-        scale = Math.max(w / iw, h / ih);
-      } else {
-        scale = Math.min(w / iw, h / ih);
-      }
+      const fstr = String(fit);
+      const vAlign = rect.vAlign != null ? rect.vAlign : 'center';
+      const scale = fstr === 'cover' ? Math.max(w / iw, h / ih) : Math.min(w / iw, h / ih);
       const dw = iw * scale;
       const dh = ih * scale;
       const dx = x + (w - dw) / 2;
-      const dy = y + (h - dh) / 2;
-      ctx.drawImage(img, 0, 0, iw, ih, dx, dy, dw, dh);
+      let dy;
+      if (vAlign === 'bottom') {
+        dy = y + h - dh;
+      } else if (vAlign === 'top') {
+        dy = y;
+      } else {
+        dy = y + (h - dh) / 2;
+      }
+      drawImage9Int(img, 0, 0, iw, ih, dx, dy, dw, dh);
     }
 
     function getScaledGridRect() {
@@ -778,14 +852,6 @@
       const g = S.gridRect;
       const img = assetSheetImg;
       if (!img || !img.naturalWidth) return g;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxScaleGridRectToImage === 'function') {
-        const r = window.RUBYFIGHT.gfxScaleGridRectToImage(
-          g.x, g.y, g.w, g.h,
-          img.naturalWidth, img.naturalHeight,
-          S.sheetW, S.sheetH
-        );
-        return { x: r[0], y: r[1], w: r[2], h: r[3] };
-      }
       const fx = img.naturalWidth / S.sheetW;
       const fy = img.naturalHeight / S.sheetH;
       return {
@@ -802,10 +868,6 @@
       const cols = S.cols;
       const rows = S.rows;
       const ins = S.cellInset || 0;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSheetCellRect === 'function') {
-        const r = window.RUBYFIGHT.gfxSheetCellRect(g.x, g.y, g.w, g.h, cols, rows, col, row, ins);
-        return { sx: r[0], sy: r[1], sw: r[2], sh: r[3] };
-      }
       const cw = Math.floor(g.w / cols);
       const ch = Math.floor(g.h / rows);
       let sx = g.x + col * cw;
@@ -832,19 +894,23 @@
       if (sw <= 0 || sh <= 0) return;
       const { x, y, w, h } = rect;
       const fit = rect.fit || 'contain';
-      let scale;
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxSpriteFitScale === 'function') {
-        scale = window.RUBYFIGHT.gfxSpriteFitScale(sw, sh, w, h, fit);
-      } else {
-        scale = fit === 'cover'
-          ? Math.max(w / sw, h / sh)
-          : Math.min(w / sw, h / sh);
-      }
+      const fstr = String(fit || 'contain');
+      const vAlign = rect.vAlign != null ? rect.vAlign : 'center';
+      const scale = fstr === 'cover'
+        ? Math.max(w / sw, h / sh)
+        : Math.min(w / sw, h / sh);
       const dw = sw * scale;
       const dh = sh * scale;
       const dx = x + (w - dw) / 2;
-      const dy = y + (h - dh) / 2;
-      ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      let dy;
+      if (vAlign === 'bottom') {
+        dy = y + h - dh;
+      } else if (vAlign === 'top') {
+        dy = y;
+      } else {
+        dy = y + (h - dh) / 2;
+      }
+      drawImage9Int(img, sx, sy, sw, sh, dx, dy, dw, dh);
     }
 
     function drawTiledSheetCell(img, col, row, destX, destY, destW, destH) {
@@ -865,7 +931,7 @@
       ctx.clip();
       for (let tx = 0; tx < destW + tw; tx += tw) {
         for (let ty = 0; ty < destH + th; ty += th) {
-          ctx.drawImage(img, sx, sy, sw, sh, destX + tx, destY + ty, tw, th);
+          drawImage9Int(img, sx, sy, sw, sh, destX + tx, destY + ty, tw, th);
         }
       }
       ctx.restore();
@@ -960,15 +1026,16 @@
     let lastPaintSoundTime = 0;
 
     function playSound(type) {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      const now = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
 
-      if (type === 'paint') {
+        if (type === 'paint') {
         const nowTs = Date.now();
         if (nowTs - lastPaintSoundTime < 60) return;
         lastPaintSoundTime = nowTs;
@@ -1011,21 +1078,134 @@
         gain.gain.linearRampToValueAtTime(0.01, now + 1.0);
         osc.start(now);
         osc.stop(now + 1.0);
+        }
+      } catch (e) {
+        console.warn('[RUBYFIGHT] playSound failed (continuing without audio)', e);
       }
     }
 
-    // ==========================================
-    // 入力処理
-    // ==========================================
-    window.addEventListener('keydown', (e) => {
-      if (!keyState[e.code]) {
-        handleKeyPress(e.code); 
+    /** 1P 視点のリザルト短いジングル（Web Audio 直生成）。「finish」の直後 0.15s から鳴る */
+    function playResultStingerP1() {
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const t0 = audioCtx.currentTime + 0.15;
+        if (p1Score > p2Score) {
+          const freqs = [523.25, 659.25, 783.99, 1046.5];
+          for (let i = 0; i < freqs.length; i++) {
+            const t = t0 + i * 0.11;
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(freqs[i], t);
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(0.11, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + 0.18);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start(t);
+            o.stop(t + 0.2);
+          }
+        } else if (p1Score < p2Score) {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.type = 'sine';
+          o.frequency.setValueAtTime(360, t0);
+          o.frequency.exponentialRampToValueAtTime(78, t0 + 1.15);
+          g.gain.setValueAtTime(0, t0);
+          g.gain.linearRampToValueAtTime(0.13, t0 + 0.04);
+          g.gain.exponentialRampToValueAtTime(0.0008, t0 + 1.25);
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.start(t0);
+          o.stop(t0 + 1.3);
+          const o2 = audioCtx.createOscillator();
+          const g2 = audioCtx.createGain();
+          o2.type = 'sine';
+          o2.frequency.setValueAtTime(350, t0);
+          o2.frequency.exponentialRampToValueAtTime(70, t0 + 1.1);
+          g2.gain.setValueAtTime(0, t0);
+          g2.gain.linearRampToValueAtTime(0.05, t0 + 0.2);
+          g2.gain.exponentialRampToValueAtTime(0.0008, t0 + 1.2);
+          o2.connect(g2);
+          g2.connect(audioCtx.destination);
+          o2.start(t0);
+          o2.stop(t0 + 1.3);
+        } else {
+          function blip(t, f0, f1) {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.type = 'sine';
+            o.frequency.setValueAtTime(f0, t);
+            o.frequency.exponentialRampToValueAtTime(f1, t + 0.2);
+            g.gain.setValueAtTime(0, t);
+            g.gain.linearRampToValueAtTime(0.08, t + 0.02);
+            g.gain.exponentialRampToValueAtTime(0.0008, t + 0.35);
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.start(t);
+            o.stop(t + 0.4);
+          }
+          blip(t0, 330, 262);
+          blip(t0 + 0.22, 262, 196);
+        }
+      } catch (e) {
+        console.warn('[RUBYFIGHT] playResultStingerP1 failed (continuing without audio)', e);
       }
-      keyState[e.code] = true;
+    }
+
+    function enterResultState() {
+      calcScore();
+      state = 'RESULT';
+      stateStartTime = Date.now();
+      playSound('finish');
+      playResultStingerP1();
+    }
+
+    // ==========================================
+    // 入力処理（e.code が空の環境・IME 併用向けに e.key から補完）
+    // ==========================================
+    function keyEventToLogicalCode(e) {
+      if (e.code) return e.code;
+      if (e.key == null) return '';
+      if (e.key.length === 1) {
+        const k = e.key.toLowerCase();
+        if (k === 'w') return 'KeyW';
+        if (k === 's') return 'KeyS';
+        if (k === 'a') return 'KeyA';
+        if (k === 'd') return 'KeyD';
+        if (k === 'f') return 'KeyF';
+      }
+      if (e.key === 'ArrowUp') return 'ArrowUp';
+      if (e.key === 'ArrowDown') return 'ArrowDown';
+      if (e.key === 'ArrowLeft') return 'ArrowLeft';
+      if (e.key === 'ArrowRight') return 'ArrowRight';
+      if (e.key === ' ' || e.key === 'Spacebar') return 'Space';
+      if (e.key === 'Enter' || e.key === 'NumpadEnter') return 'Enter'; // 2P の旗も NumpadEnter で
+      if (e.key === 'Escape') return 'Escape';
+      return '';
+    }
+
+    window.addEventListener('keydown', (e) => {
+      const code = keyEventToLogicalCode(e);
+      if (code) {
+        if (!keyState[code]) {
+          handleKeyPress(code);
+        }
+        keyState[code] = true;
+      }
     });
 
     window.addEventListener('keyup', (e) => {
-      keyState[e.code] = false;
+      const code = keyEventToLogicalCode(e);
+      if (code) keyState[code] = false;
+    });
+
+    window.addEventListener('blur', () => {
+      for (const k in keyState) {
+        if (Object.prototype.hasOwnProperty.call(keyState, k)) {
+          keyState[k] = false;
+        }
+      }
     });
 
     function toggleBrowserFullscreen() {
@@ -1137,7 +1317,6 @@
       } else {
         timeRemaining = CONFIG.GAME_TIME;
       }
-      playSound('select');
 
       flags1 = [];
       flags2 = [];
@@ -1170,11 +1349,16 @@
       } else {
         p2 = { x: 23 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2, y: 8 * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2 };
       }
+      p1Vis = { x: p1.x, y: p1.y };
+      p2Vis = { x: p2.x, y: p2.y };
 
       cpuTarget = null;
       cpuWaitTimer = 0;
 
       calcScore();
+      // playSound は Web Audio 失敗しうる。state=PLAYING のあと最後に（途中で投げると grid/p1 未初期化のままになる）
+      playSound('select');
+      canvas.focus({ preventScroll: true });
     }
 
     function isValidPosition(px, py) {
@@ -1197,11 +1381,157 @@
       return true;
     }
 
-    function clamp(val, min, max) {
-      if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gfxClamp === 'function') {
-        return window.RUBYFIGHT.gfxClamp(val, min, max);
+    /**
+     * CPU ターゲット（lib/rubyfight/cpu.rb pick_target_center と同じ考え方）
+     * P1 隣接・空隣接・P1 マス乗上・中心寄り。旗 2 本時は大きい三角形（塗り数）を最優先
+     */
+    function cpuHeurForCell(gx, gy, grid, maskRows) {
+      const cols = CONFIG.GRID_COLS;
+      const rows = CONFIG.GRID_ROWS;
+      const c = grid[gy][gx];
+      let p1n = 0;
+      let p0n = 0;
+      const d4 = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+      for (let i = 0; i < d4.length; i++) {
+        const nx = gx + d4[i][0];
+        const ny = gy + d4[i][1];
+        if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) continue;
+        if (maskRows[ny][nx] === ' ') continue;
+        if (grid[ny][nx] === 1) p1n++;
+        if (grid[ny][nx] === 0) p0n++;
       }
+      const t = CONFIG.TILE_SIZE;
+      const cx = gx * t + t / 2;
+      const cy = gy * t + t / 2;
+      const cx0 = FIELD_WIDTH / 2;
+      const cy0 = FIELD_HEIGHT / 2;
+      const mxy = Math.max(FIELD_WIDTH, FIELD_HEIGHT) / 2;
+      const cbonus = 1.0 - Math.min(Math.hypot(cx - cx0, cy - cy0) / mxy, 1.0);
+      let s = 4.2 * p1n + 0.75 * p0n;
+      if (c === 1) s += 1.35;
+      if (c === 0) s += 0.55;
+      s += 0.65 * cbonus;
+      return s;
+    }
+
+    /** 旗 0〜1 本時のみ。旗 2 本の第 3 点は cpuPickTargetScoredJs 内で gain 最大化 */
+    function cpuScoreForCandidate(gx, gy, grid, maskRows, flags2) {
+      const h = cpuHeurForCell(gx, gy, grid, maskRows);
+      if (!flags2 || flags2.length === 0) return h;
+      const f = flags2[0];
+      const span = Math.abs(gx - f.gx) + Math.abs(gy - f.gy);
+      return 0.14 * span + 0.9 * h;
+    }
+
+    function cpuTieKeyGyGx(a, b) {
+      for (let k = 0; k < a.length; k++) {
+        if (a[k] !== b[k]) return a[k] < b[k] ? -1 : 1;
+      }
+      return 0;
+    }
+
+    /**
+     * 旗 2 本: 塗りマス数 gain を常に最大 → 同点は h 最大 → 同点は (gy, gx) 最小
+     * それ以外: 従来スコア最大 → 同点は (gy, gx) 最小（lib/rubyfight/cpu.rb と一致）
+     */
+    function cpuPickTargetScoredJs(grid, maskRows, flags2) {
+      const t = CONFIG.TILE_SIZE;
+      const two = flags2 && flags2.length === 2;
+      const a = two ? flags2[0] : null;
+      const b = two ? flags2[1] : null;
+      const cands = [];
+      for (let y = 0; y < CONFIG.GRID_ROWS; y++) {
+        for (let x = 0; x < CONFIG.GRID_COLS; x++) {
+          if (maskRows[y][x] === ' ') continue;
+          if (grid[y][x] === 2) continue;
+          const tx = x * t + t / 2;
+          const ty = y * t + t / 2;
+          if (!isValidPosition(tx, ty)) continue;
+          if (two) {
+            const h = cpuHeurForCell(x, y, grid, maskRows);
+            const gain = cpuSimulatedFillCount2(grid, maskRows, a.gx, a.gy, b.gx, b.gy, x, y);
+            cands.push({ tx, ty, gx: x, gy: y, gain, h });
+          } else {
+            cands.push({ tx, ty, gx: x, gy: y, s: cpuScoreForCandidate(x, y, grid, maskRows, flags2) });
+          }
+        }
+      }
+      if (cands.length === 0) return null;
+      if (two) {
+        let gmax = -1;
+        for (let i = 0; i < cands.length; i++) {
+          if (cands[i].gain > gmax) gmax = cands[i].gain;
+        }
+        let t1 = cands.filter(function (c) { return c.gain === gmax; });
+        let hmax = -1e9;
+        for (let i = 0; i < t1.length; i++) {
+          if (t1[i].h > hmax) hmax = t1[i].h;
+        }
+        t1 = t1.filter(function (c) { return c.h === hmax; });
+        t1.sort(function (p, q) { return cpuTieKeyGyGx([p.gy, p.gx], [q.gy, q.gx]); });
+        const pick0 = t1[0];
+        return [pick0.tx, pick0.ty];
+      }
+      let best = -1e9;
+      for (let i = 0; i < cands.length; i++) {
+        if (cands[i].s > best) best = cands[i].s;
+      }
+      const t1 = cands.filter(function (c) { return c.s === best; });
+      t1.sort(function (p, q) { return cpuTieKeyGyGx([p.gy, p.gx], [q.gy, q.gx]); });
+      const pick = t1[0];
+      return [pick.tx, pick.ty];
+    }
+
+    function clamp(val, min, max) {
       return Math.max(min, Math.min(max, val));
+    }
+
+    /** @returns {number} 0 以上。CONFIG が欠ける・NaN なら 0 */
+    function playerVisSmoothK() {
+      const n = Number(CONFIG.PLAYER_VIS_SMOOTH);
+      if (!isFinite(n) || n < 0) return 0;
+      return n;
+    }
+
+    /** 追従オフ、または vis が壊れているときは sim を描画に使う */
+    function playerDrawFor(sim, vis) {
+      if (playerVisSmoothK() <= 0) return sim;
+      if (vis && isFinite(vis.x) && isFinite(vis.y)) return vis;
+      return sim;
+    }
+
+    /** シミュ座標 p1/p2 へ p1Vis/p2Vis を追従（描画のチラつき低減。ゲームルールの座標は不変） */
+    function smoothPlayerDisplay(dt) {
+      const k = playerVisSmoothK();
+      if (k <= 0) {
+        p1Vis.x = p1.x;
+        p1Vis.y = p1.y;
+        p2Vis.x = p2.x;
+        p2Vis.y = p2.y;
+        return;
+      }
+      const dtf = typeof dt === 'number' && isFinite(dt) && dt > 0 ? Math.min(dt, 0.25) : 1 / 60;
+      function step(vis, tx, ty) {
+        if (!isFinite(tx) || !isFinite(ty)) {
+          return;
+        }
+        const dx = tx - vis.x;
+        const dy = ty - vis.y;
+        if (dx * dx + dy * dy > 400 * 400) {
+          vis.x = tx;
+          vis.y = ty;
+          return;
+        }
+        const t = 1 - Math.exp(-k * dtf);
+        vis.x += dx * t;
+        vis.y += dy * t;
+        if (!isFinite(vis.x) || !isFinite(vis.y)) {
+          vis.x = tx;
+          vis.y = ty;
+        }
+      }
+      step(p1Vis, p1.x, p1.y);
+      step(p2Vis, p2.x, p2.y);
     }
 
     function placeFlag(p, playerId) {
@@ -1315,6 +1645,26 @@
       return a >= eps && b >= eps && c >= eps;
     }
 
+    /**
+     * 第 3 点 (x2,y2) を加えたとき、playerId=2 で塗り替わるマス数（lib/rubyfight/territory simulated_fill_count に相当）
+     */
+    function cpuSimulatedFillCount2(grid, maskRows, x0, y0, x1, y1, x2, y2) {
+      const playerId = 2;
+      const minX = Math.min(x0, x1, x2);
+      const maxX = Math.max(x0, x1, x2);
+      const minY = Math.min(y0, y1, y2);
+      const maxY = Math.max(y0, y1, y2);
+      let filled = 0;
+      for (let y = minY; y <= maxY; y++) {
+        for (let x = minX; x <= maxX; x++) {
+          if (!maskRows[y] || maskRows[y][x] === ' ') continue;
+          if (!isPointInTriangle(x, y, x0, y0, x1, y1, x2, y2)) continue;
+          if (grid[y][x] !== playerId) filled++;
+        }
+      }
+      return filled;
+    }
+
     function calcScore() {
       if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.territoryCalcScores === 'function') {
         const s = window.RUBYFIGHT.territoryCalcScores(grid, FIELD_MASK);
@@ -1339,18 +1689,14 @@
           const tick = window.RUBYFIGHT.gameStateTickPlaying(timeRemaining, dt);
           timeRemaining = tick[0];
           if (tick[1]) {
-            state = tick[1];
-            stateStartTime = Date.now();
-            playSound('finish');
+            enterResultState();
             return;
           }
         } else {
           timeRemaining -= dt;
           if (timeRemaining <= 0) {
             timeRemaining = 0;
-            state = 'RESULT';
-            stateStartTime = Date.now();
-            playSound('finish');
+            enterResultState();
             return;
           }
         }
@@ -1359,6 +1705,12 @@
         if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.moveSpeedForTimeRemaining === 'function') {
           currentSpeed = window.RUBYFIGHT.moveSpeedForTimeRemaining(timeRemaining);
         } else {
+          currentSpeed = timeRemaining <= CONFIG.RUSH_TIME
+            ? CONFIG.BASE_SPEED * CONFIG.SPEED_UP_MULTIPLIER
+            : CONFIG.BASE_SPEED;
+        }
+        // __rbNum 等で NaN/0 になると一切動かない
+        if (!isFinite(currentSpeed) || currentSpeed <= 0) {
           currentSpeed = timeRemaining <= CONFIG.RUSH_TIME
             ? CONFIG.BASE_SPEED * CONFIG.SPEED_UP_MULTIPLIER
             : CONFIG.BASE_SPEED;
@@ -1402,27 +1754,16 @@
             cpuWaitTimer -= dt;
           } else {
             if (!cpuTarget) {
+              const cpuFlagPairs = (flags2 && flags2.length) ? flags2.map(function (f) { return [f.gx, f.gy]; }) : null;
               if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuPickTarget === 'function') {
-                const t = window.RUBYFIGHT.cpuPickTarget(grid, FIELD_MASK);
+                const t = window.RUBYFIGHT.cpuPickTarget(grid, FIELD_MASK, cpuFlagPairs);
                 if (t) {
                   cpuTarget = { x: t[0], y: t[1] };
                 }
               } else {
-                let targetTiles = [];
-                for(let y=0; y<CONFIG.GRID_ROWS; y++) {
-                  for(let x=0; x<CONFIG.GRID_COLS; x++) {
-                    if(FIELD_MASK[y][x] !== ' ' && grid[y][x] !== 2) {
-                      const tx = x * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-                      const ty = y * CONFIG.TILE_SIZE + CONFIG.TILE_SIZE / 2;
-                      if (isValidPosition(tx, ty)) {
-                        targetTiles.push({x: tx, y: ty});
-                      }
-                    }
-                  }
-                }
-                if (targetTiles.length > 0) {
-                  const targetTile = targetTiles[Math.floor(Math.random() * targetTiles.length)];
-                  cpuTarget = { x: targetTile.x, y: targetTile.y };
+                const ts = cpuPickTargetScoredJs(grid, FIELD_MASK, flags2);
+                if (ts) {
+                  cpuTarget = { x: ts[0], y: ts[1] };
                 }
               }
             }
@@ -1435,6 +1776,9 @@
               if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining === 'function') {
                 cpuSpeed = window.RUBYFIGHT.cpuMoveSpeedForTimeRemaining(timeRemaining);
               } else {
+                cpuSpeed = currentSpeed * CONFIG.CPU_SPEED_MULTIPLIER;
+              }
+              if (!isFinite(cpuSpeed) || cpuSpeed <= 0) {
                 cpuSpeed = currentSpeed * CONFIG.CPU_SPEED_MULTIPLIER;
               }
 
@@ -1483,14 +1827,16 @@
                      p2.x = np[0];
                      p2.y = np[1];
                    } else {
-                     p2.x += (FIELD_WIDTH / 2 - p2.x) * 0.05;
-                     p2.y += (FIELD_HEIGHT / 2 - p2.y) * 0.05;
+                     p2.x += (FIELD_WIDTH / 2 - p2.x) * 0.07;
+                     p2.y += (FIELD_HEIGHT / 2 - p2.y) * 0.07;
                    }
                 }
               }
             }
           }
         }
+
+        smoothPlayerDisplay(dt);
       }
     }
 
@@ -1592,7 +1938,14 @@
     function drawField() {
       ctx.save();
       ctx.translate(OFFSET_X, OFFSET_Y);
-      
+
+      if (state === 'RESULT' && playerVisSmoothK() > 0) {
+        p1Vis.x = p1.x;
+        p1Vis.y = p1.y;
+        p2Vis.x = p2.x;
+        p2Vis.y = p2.y;
+      }
+
       const now = Date.now();
 
       // タイル描画（背景ロゴ処理を削除し、色塗りつぶしのみに変更）
@@ -1664,8 +2017,8 @@
       drawFlags(flags1, CONFIG.COLORS.p1.player);
       drawFlags(flags2, CONFIG.COLORS.p2.player);
 
-      drawPlayer(p1, CONFIG.COLORS.p1.player, false);
-      drawPlayer(p2, CONFIG.COLORS.p2.player, true);
+      drawPlayer(playerDrawFor(p1, p1Vis), CONFIG.COLORS.p1.player, false);
+      drawPlayer(playerDrawFor(p2, p2Vis), CONFIG.COLORS.p2.player, true);
 
       ctx.restore();
     }

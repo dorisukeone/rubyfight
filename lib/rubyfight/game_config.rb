@@ -19,8 +19,9 @@ module Rubyfight
         'GRID_ROWS' => grid_rows,
         'PLAYER_SIZE' => 28,
         'BASE_SPEED' => 160,
-        'SPEED_UP_MULTIPLIER' => 1.3,
-        'CPU_SPEED_MULTIPLIER' => 1.15,
+        'SPEED_UP_MULTIPLIER' => 1.4,
+        'CPU_SPEED_MULTIPLIER' => 1.42,
+        'PLAYER_VIS_SMOOTH' => 0,
         'COLORS' => {
           'bg' => '#2e0f0f',
           'fieldBg' => '#4a1a1a',
@@ -31,8 +32,8 @@ module Rubyfight
           'hudGold' => '#f5b042',
           'hudGoldDim' => '#c98a2c'
         },
-        'GAME_TIME' => 60,
-        'RUSH_TIME' => 10,
+        'GAME_TIME' => 55,
+        'RUSH_TIME' => 15,
         'TITLE_PARTS' => {
           'background' => '',
           'logo' => 'assets/title/logo.png',
@@ -43,11 +44,14 @@ module Rubyfight
         'LOGO_KEY_MAX_RGB' => 32,
         'TITLE_CHAR_RED_SHEET' => {
           'url' => 'assets/title/char_red_sheet.png',
+          # コマ境界は「幅が cols の倍数・高さが rows の倍数」必須（割り切れないと表示が揺れる）
           'cols' => 4,
           'rows' => 4,
+          'frameLayout' => 'row',
           'fps' => 6,
           'frameStart' => 0,
-          'frameCount' => 16,
+          # 先頭行から順に使うコマ数（1=静止）。4x4 シートで歩行 4 コマ分など
+          'frameCount' => 4,
           'removeEdgeBlack' => true,
           'keyMaxRgb' => 32
         },
@@ -55,9 +59,10 @@ module Rubyfight
           'url' => 'assets/title/char_blue_sheet.png',
           'cols' => 4,
           'rows' => 4,
+          'frameLayout' => 'row',
           'fps' => 6,
           'frameStart' => 0,
-          'frameCount' => 16,
+          'frameCount' => 4,
           'removeEdgeBlack' => false,
           'removeMatte' => true,
           'matteDarkMax' => 40,

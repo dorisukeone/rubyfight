@@ -70,5 +70,13 @@ module Rubyfight
 
       flags + [[gx, gy]]
     end
+
+    # 実グリッドを汚さず、fill_triangle! と同じ集計（塗るマス数＝奪得・上書きセル数）
+    def self.simulated_fill_count(grid, player_id, three_pairs, mask_rows)
+      return 0 if three_pairs.length != 3
+
+      g = grid.map { |r| r.dup }
+      fill_triangle!(g, player_id, three_pairs, mask_rows)
+    end
   end
 end

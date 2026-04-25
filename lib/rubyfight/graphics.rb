@@ -21,17 +21,40 @@ module Rubyfight
       c.nil? ? [0, 0] : c
     end
 
+    # 余りピクセルを先頭列・行に加算（index.html getUniformSpriteFrameRect と同一ロジック）
+    def self.cell_axis_starts_and_sizes(total, n)
+      c = [n, 1].max
+      t = [total, 0].max
+      base = t / c
+      rem = t % c
+      sizes = (0...c).map { |i| base + (i < rem ? 1 : 0) }
+      starts = []
+      acc = 0
+      c.times do |i|
+        starts << acc
+        acc += sizes[i]
+      end
+      [starts, sizes]
+    end
+
     # index.html getUniformSpriteFrameRect
-    def self.uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index)
-      col = frame_index % cols
-      row = frame_index / cols
-      base_w = img_w / cols
-      base_h = img_h / rows
-      sx = col * base_w
-      sy = row * base_h
-      sw = col == cols - 1 ? img_w - sx : base_w
-      sh = row == rows - 1 ? img_h - sy : base_h
-      [sx, sy, sw, sh]
+    # layout: 'row' = 行メジャー（左→右で次の行。一般的な歩行シート向け）
+    #         'column' = 列メジャー（上→下で次の列。縦方向にコマを置いたループ向け）
+    def self.uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index, layout = 'row')
+      fi = frame_index.to_i
+      lay = (layout == nil || layout.to_s == '') ? 'row' : layout.to_s
+      nc = [cols, 1].max
+      nr = [rows, 1].max
+      if lay == 'column' || lay == 'column_major'
+        col = fi / nr
+        row = fi % nr
+      else
+        col = fi % nc
+        row = fi / nc
+      end
+      c_st, c_sz = cell_axis_starts_and_sizes(img_w, nc)
+      r_st, r_sz = cell_axis_starts_and_sizes(img_h, nr)
+      [c_st[col], r_st[row], c_sz[col], r_sz[row]]
     end
 
     # drawTitleCharSpriteSheet のフレーム index

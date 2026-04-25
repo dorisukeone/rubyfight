@@ -24735,7 +24735,7 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
         grid_rows = 18;
         field_w = $rb_times(tile, grid_cols);
         field_h = $rb_times(tile, grid_rows);
-        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "COLORS", "GAME_TIME", "RUSH_TIME", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.3, "CPU_SPEED_MULTIPLIER": 1.15, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 60, "RUSH_TIME": 10, "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "fps", "frameStart", "frameCount", "removeEdgeBlack", "keyMaxRgb"], {"url": "assets/title/char_red_sheet.png", "cols": 4, "rows": 4, "fps": 6, "frameStart": 0, "frameCount": 16, "removeEdgeBlack": true, "keyMaxRgb": 32}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "fps", "frameStart", "frameCount", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin", "keyMaxRgb"], {"url": "assets/title/char_blue_sheet.png", "cols": 4, "rows": 4, "fps": 6, "frameStart": 0, "frameCount": 16, "removeEdgeBlack": false, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45, "keyMaxRgb": 32}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
+        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "PLAYER_VIS_SMOOTH", "COLORS", "GAME_TIME", "RUSH_TIME", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.4, "CPU_SPEED_MULTIPLIER": 1.42, "PLAYER_VIS_SMOOTH": 0, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 55, "RUSH_TIME": 15, "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "fps", "frameStart", "frameCount", "removeEdgeBlack", "keyMaxRgb"], {"url": "assets/title/char_red_sheet.png", "cols": 4, "rows": 4, "frameLayout": "row", "fps": 6, "frameStart": 0, "frameCount": 4, "removeEdgeBlack": true, "keyMaxRgb": 32}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "fps", "frameStart", "frameCount", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin", "keyMaxRgb"], {"url": "assets/title/char_blue_sheet.png", "cols": 4, "rows": 4, "frameLayout": "row", "fps": 6, "frameStart": 0, "frameCount": 4, "removeEdgeBlack": false, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45, "keyMaxRgb": 32}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
       }, $GameConfig_to_browser_hash$1.$$arity = 0);
       Opal.defs(self, '$field_width', $GameConfig_field_width$2 = function $$field_width() {
         var self = this;
@@ -24987,7 +24987,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
   }
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $send = Opal.send, $truthy = Opal.truthy;
 
-  Opal.add_stubs(['$new', '$+', '$*', '$-', '$==', '$to_f', '$/', '$>=', '$!=', '$length', '$min', '$max', '$each', '$nil?', '$[]', '$point_in_triangle?', '$[]=', '$each_with_index', '$any?']);
+  Opal.add_stubs(['$new', '$+', '$*', '$-', '$==', '$to_f', '$/', '$>=', '$!=', '$length', '$min', '$max', '$each', '$nil?', '$[]', '$point_in_triangle?', '$[]=', '$each_with_index', '$any?', '$map', '$dup', '$fill_triangle!']);
   return (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
@@ -24996,7 +24996,7 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
     (function($base, $parent_nesting) {
       var self = $module($base, 'Territory');
 
-      var $nesting = [self].concat($parent_nesting), $Territory_empty_grid$1, $Territory_point_in_triangle$ques$3, $Territory_fill_triangle$excl$4, $Territory_calc_scores$7, $Territory_push_flag$10;
+      var $nesting = [self].concat($parent_nesting), $Territory_empty_grid$1, $Territory_point_in_triangle$ques$3, $Territory_fill_triangle$excl$4, $Territory_calc_scores$7, $Territory_push_flag$10, $Territory_simulated_fill_count$12;
 
       
       Opal.defs(self, '$empty_grid', $Territory_empty_grid$1 = function $$empty_grid(rows, cols) {
@@ -25167,12 +25167,31 @@ Opal.modules["rubyfight/territory"] = function(Opal) {
           return nil};
         return $rb_plus(flags, [[gx, gy]]);
       }, $Territory_push_flag$10.$$arity = 3);
+      Opal.defs(self, '$simulated_fill_count', $Territory_simulated_fill_count$12 = function $$simulated_fill_count(grid, player_id, three_pairs, mask_rows) {
+        var $$13, self = this, g = nil;
+
+        
+        if ($truthy(three_pairs.$length()['$!='](3))) {
+          return 0};
+        g = $send(grid, 'map', [], ($$13 = function(r){var self = $$13.$$s == null ? this : $$13.$$s;
+
+        
+          
+          if (r == null) {
+            r = nil;
+          };
+          return r.$dup();}, $$13.$$s = self, $$13.$$arity = 1, $$13));
+        return self['$fill_triangle!'](g, player_id, three_pairs, mask_rows);
+      }, $Territory_simulated_fill_count$12.$$arity = 4);
     })($nesting[0], $nesting)
   })($nesting[0], $nesting)
 };
 
 /* Generated by Opal 1.1.1 */
 Opal.modules["rubyfight/cpu"] = function(Opal) {
+  function $rb_ge(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs >= rhs : lhs['$>='](rhs);
+  }
   function $rb_plus(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs + rhs : lhs['$+'](rhs);
   }
@@ -25182,9 +25201,18 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
   function $rb_divide(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs / rhs : lhs['$/'](rhs);
   }
-  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $hash2 = Opal.hash2, $send = Opal.send, $truthy = Opal.truthy;
+  function $rb_lt(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs < rhs : lhs['$<'](rhs);
+  }
+  function $rb_minus(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
+  }
+  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy, $send = Opal.send, $hash2 = Opal.hash2;
 
-  Opal.add_stubs(['$new', '$tile_size', '$grid_rows', '$grid_cols', '$times', '$==', '$[]', '$+', '$*', '$/', '$player_position_valid?', '$<<', '$empty?', '$rand', '$length']);
+  Opal.add_stubs(['$require', '$nil?', '$respond_to?', '$to_a', '$is_a?', '$compact', '$map', '$>=', '$length', '$to_i', '$[]', '$+', '$*', '$==', '$new', '$normalize_flag_pairs', '$tile_size', '$grid_rows', '$grid_cols', '$to_browser_hash', '$to_f', '$/', '$max', '$<', '$times', '$player_position_valid?', '$each', '$hypot', '$-', '$min', '$heur_score', '$simulated_fill_count', '$<<', '$abs', '$empty?', '$select', '$min_by', '$rand']);
+  
+  self.$require("rubyfight/game_config");
+  self.$require("rubyfight/territory");
   return (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
@@ -25193,13 +25221,72 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
     (function($base, $parent_nesting) {
       var self = $module($base, 'Cpu');
 
-      var $nesting = [self].concat($parent_nesting), $Cpu_pick_target_center$1, $Cpu_wait_after_flag_sec$4, $Cpu_wait_after_stuck_sec$5;
+      var $nesting = [self].concat($parent_nesting), $Cpu_normalize_flag_pairs$1, $Cpu_heur_score$3, $Cpu_pick_target_center$4, $Cpu_wait_after_flag_sec$16, $Cpu_wait_after_stuck_sec$17;
 
       
-      Opal.defs(self, '$pick_target_center', $Cpu_pick_target_center$1 = function $$pick_target_center(grid, mask_rows, $kwargs) {
-        var random, $$2, self = this, tile = nil, rows = nil, cols = nil, candidates = nil;
+      Opal.const_set($nesting[0], 'W_ADJ_P1', 4.2);
+      Opal.const_set($nesting[0], 'W_ADJ_0', 0.75);
+      Opal.const_set($nesting[0], 'W_CELL_P1', 1.35);
+      Opal.const_set($nesting[0], 'W_CELL_0', 0.55);
+      Opal.const_set($nesting[0], 'W_CENTER', 0.65);
+      Opal.const_set($nesting[0], 'W_SPAN', 0.14);
+      Opal.defs(self, '$normalize_flag_pairs', $Cpu_normalize_flag_pairs$1 = function $$normalize_flag_pairs(cpu_flags) {
+        var $$2, self = this, a = nil;
 
         
+        if ($truthy(cpu_flags['$nil?']())) {
+          return []};
+        a = cpu_flags;
+        if ($truthy(a['$respond_to?']("to_a"))) {
+          a = a.$to_a()};
+        if ($truthy(a['$is_a?']($$($nesting, 'Array')))) {
+        } else {
+          return []
+        };
+        return $send(a, 'map', [], ($$2 = function(p){var self = $$2.$$s == null ? this : $$2.$$s, $ret_or_1 = nil, $ret_or_2 = nil;
+
+        
+          
+          if (p == null) {
+            p = nil;
+          };
+          if ($truthy((function() {if ($truthy(($ret_or_1 = p['$is_a?']($$($nesting, 'Array'))))) {
+            return $rb_ge(p.$length(), 2)
+          } else {
+            return $ret_or_1
+          }; return nil; })())) {
+            return [p['$[]'](0).$to_i(), p['$[]'](1).$to_i()]
+          } else if ($truthy((function() {if ($truthy(($ret_or_2 = p['$respond_to?']("[]")))) {
+            return p['$[]']("gx")
+          } else {
+            return $ret_or_2
+          }; return nil; })())) {
+            return [p['$[]']("gx").$to_i(), p['$[]']("gy").$to_i()]
+          } else {
+            return nil
+          };}, $$2.$$s = self, $$2.$$arity = 1, $$2)).$compact();
+      }, $Cpu_normalize_flag_pairs$1.$$arity = 1);
+      Opal.defs(self, '$heur_score', $Cpu_heur_score$3 = function $$heur_score(p1n, p0n, c, cbonus) {
+        var self = this;
+
+        return $rb_plus($rb_plus($rb_plus($rb_plus($rb_times($$($nesting, 'W_ADJ_P1'), p1n), $rb_times($$($nesting, 'W_ADJ_0'), p0n)), (function() {if (c['$=='](1)) {
+          return $$($nesting, 'W_CELL_P1')
+        } else {
+          return 0
+        }; return nil; })()), (function() {if (c['$=='](0)) {
+          return $$($nesting, 'W_CELL_0')
+        } else {
+          return 0
+        }; return nil; })()), $rb_times($$($nesting, 'W_CENTER'), cbonus))
+      }, $Cpu_heur_score$3.$$arity = 4);
+      Opal.defs(self, '$pick_target_center', $Cpu_pick_target_center$4 = function $$pick_target_center(grid, mask_rows, $a, $b) {
+        var $post_args, $kwargs, cpu_flags, random, $$5, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, self = this, fp = nil, tile = nil, rows = nil, cols = nil, cfg = nil, fw = nil, fh = nil, cx0 = nil, cy0 = nil, mxy = nil, entries = nil, gmax = nil, t = nil, hmax = nil, best = nil;
+
+        
+        
+        $post_args = Opal.slice.call(arguments, 2, arguments.length);
+        
+        $kwargs = Opal.extract_kwargs($post_args);
         
         if ($kwargs == null) {
           $kwargs = $hash2([], {});
@@ -25207,22 +25294,39 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
           throw Opal.ArgumentError.$new('expected kwargs');
         };
         
+        if ($post_args.length > 0) {
+          cpu_flags = $post_args[0];
+          $post_args.splice(0, 1);
+        }
+        if (cpu_flags == null) {
+          cpu_flags = nil;
+        };
+        
         random = $kwargs.$$smap["random"];
         if (random == null) {
           random = $$($nesting, 'Random').$new()
         };
+        fp = self.$normalize_flag_pairs(cpu_flags);
         tile = $$($nesting, 'Layout').$tile_size();
         rows = $$($nesting, 'Layout').$grid_rows();
         cols = $$($nesting, 'Layout').$grid_cols();
-        candidates = [];
-        $send(rows, 'times', [], ($$2 = function(y){var self = $$2.$$s == null ? this : $$2.$$s, $$3;
+        cfg = $$($nesting, 'GameConfig').$to_browser_hash();
+        fw = cfg['$[]']("FIELD_WIDTH").$to_f();
+        fh = cfg['$[]']("FIELD_HEIGHT").$to_f();
+        cx0 = $rb_divide(fw, 2.0);
+        cy0 = $rb_divide(fh, 2.0);
+        mxy = $rb_divide([fw, fh].$max(), 2.0);
+        if ($truthy($rb_lt(mxy, 1.0))) {
+          mxy = 1.0};
+        entries = [];
+        $send(rows, 'times', [], ($$5 = function(y){var self = $$5.$$s == null ? this : $$5.$$s, $$6;
 
         
           
           if (y == null) {
             y = nil;
           };
-          return $send(cols, 'times', [], ($$3 = function(x){var self = $$3.$$s == null ? this : $$3.$$s, cx = nil, cy = nil;
+          return $send(cols, 'times', [], ($$6 = function(x){var self = $$6.$$s == null ? this : $$6.$$s, $$7, cx = nil, cy = nil, c = nil, p1n = nil, p0n = nil, d = nil, cbonus = nil, h = nil, tri = nil, gain = nil, fx = nil, fy = nil, span = nil, s = nil;
 
           
             
@@ -25239,12 +25343,133 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
             } else {
               return nil;
             };
-            return candidates['$<<']([cx, cy]);}, $$3.$$s = self, $$3.$$arity = 1, $$3));}, $$2.$$s = self, $$2.$$arity = 1, $$2));
-        if ($truthy(candidates['$empty?']())) {
+            c = grid['$[]'](y)['$[]'](x);
+            p1n = 0;
+            p0n = 0;
+            $send([[-1, 0], [1, 0], [0, -1], [0, 1]], 'each', [], ($$7 = function(dx, dy){var self = $$7.$$s == null ? this : $$7.$$s, nx = nil, ny = nil, $ret_or_3 = nil, $ret_or_4 = nil, $ret_or_5 = nil;
+
+            
+              
+              if (dx == null) {
+                dx = nil;
+              };
+              
+              if (dy == null) {
+                dy = nil;
+              };
+              nx = $rb_plus(x, dx);
+              ny = $rb_plus(y, dy);
+              if ($truthy((function() {if ($truthy(($ret_or_3 = (function() {if ($truthy(($ret_or_4 = (function() {if ($truthy(($ret_or_5 = $rb_lt(nx, 0)))) {
+                return $ret_or_5
+              } else {
+                return $rb_lt(ny, 0)
+              }; return nil; })()))) {
+                return $ret_or_4
+              } else {
+                return $rb_ge(nx, cols)
+              }; return nil; })()))) {
+                return $ret_or_3
+              } else {
+                return $rb_ge(ny, rows)
+              }; return nil; })())) {
+                return nil;};
+              if (mask_rows['$[]'](ny)['$[]'](nx)['$=='](" ")) {
+                return nil;};
+              if (grid['$[]'](ny)['$[]'](nx)['$=='](1)) {
+                p1n = $rb_plus(p1n, 1)};
+              if (grid['$[]'](ny)['$[]'](nx)['$=='](0)) {
+                return (p0n = $rb_plus(p0n, 1))
+              } else {
+                return nil
+              };}, $$7.$$s = self, $$7.$$arity = 2, $$7));
+            d = $$($nesting, 'Math').$hypot($rb_minus(cx, cx0), $rb_minus(cy, cy0));
+            cbonus = $rb_minus(1.0, [$rb_divide(d, mxy), 1.0].$min());
+            h = self.$heur_score(p1n, p0n, c, cbonus);
+            if (fp.$length()['$=='](2)) {
+              
+              tri = [fp['$[]'](0), fp['$[]'](1), [x, y]];
+              gain = $$($nesting, 'Territory').$simulated_fill_count(grid, 2, tri, mask_rows);
+              return entries['$<<']($hash2(["tri", "pos", "gx", "gy", "gain", "h"], {"tri": true, "pos": [cx, cy], "gx": x, "gy": y, "gain": gain, "h": h}));
+            } else if (fp.$length()['$=='](1)) {
+              
+              fx = fp['$[]'](0)['$[]'](0);
+              fy = fp['$[]'](0)['$[]'](1);
+              span = $rb_plus($rb_minus(x, fx).$abs(), $rb_minus(y, fy).$abs());
+              s = $rb_plus($rb_times($$($nesting, 'W_SPAN'), span), $rb_times(0.9, h));
+              return entries['$<<']($hash2(["tri", "pos", "gx", "gy", "s"], {"tri": false, "pos": [cx, cy], "gx": x, "gy": y, "s": s}));
+            } else {
+              return entries['$<<']($hash2(["tri", "pos", "gx", "gy", "s"], {"tri": false, "pos": [cx, cy], "gx": x, "gy": y, "s": h}))
+            };}, $$6.$$s = self, $$6.$$arity = 1, $$6));}, $$5.$$s = self, $$5.$$arity = 1, $$5));
+        if ($truthy(entries['$empty?']())) {
           return nil};
-        return candidates['$[]'](random.$rand(candidates.$length()));
-      }, $Cpu_pick_target_center$1.$$arity = -3);
-      Opal.defs(self, '$wait_after_flag_sec', $Cpu_wait_after_flag_sec$4 = function $$wait_after_flag_sec($kwargs) {
+        if ($truthy(entries['$[]'](0)['$[]']("tri"))) {
+          
+          gmax = $send(entries, 'map', [], ($$8 = function(e){var self = $$8.$$s == null ? this : $$8.$$s;
+
+          
+            
+            if (e == null) {
+              e = nil;
+            };
+            return e['$[]']("gain");}, $$8.$$s = self, $$8.$$arity = 1, $$8)).$max();
+          t = $send(entries, 'select', [], ($$9 = function(e){var self = $$9.$$s == null ? this : $$9.$$s;
+
+          
+            
+            if (e == null) {
+              e = nil;
+            };
+            return e['$[]']("gain")['$=='](gmax);}, $$9.$$s = self, $$9.$$arity = 1, $$9));
+          hmax = $send(t, 'map', [], ($$10 = function(e){var self = $$10.$$s == null ? this : $$10.$$s;
+
+          
+            
+            if (e == null) {
+              e = nil;
+            };
+            return e['$[]']("h");}, $$10.$$s = self, $$10.$$arity = 1, $$10)).$max();
+          t = $send(t, 'select', [], ($$11 = function(e){var self = $$11.$$s == null ? this : $$11.$$s;
+
+          
+            
+            if (e == null) {
+              e = nil;
+            };
+            return e['$[]']("h")['$=='](hmax);}, $$11.$$s = self, $$11.$$arity = 1, $$11));
+          return $send(t, 'min_by', [], ($$12 = function(e){var self = $$12.$$s == null ? this : $$12.$$s;
+
+          
+            
+            if (e == null) {
+              e = nil;
+            };
+            return [e['$[]']("gy"), e['$[]']("gx")];}, $$12.$$s = self, $$12.$$arity = 1, $$12))['$[]']("pos");};
+        best = $send(entries, 'map', [], ($$13 = function(e){var self = $$13.$$s == null ? this : $$13.$$s;
+
+        
+          
+          if (e == null) {
+            e = nil;
+          };
+          return e['$[]']("s");}, $$13.$$s = self, $$13.$$arity = 1, $$13)).$max();
+        t = $send(entries, 'select', [], ($$14 = function(e){var self = $$14.$$s == null ? this : $$14.$$s;
+
+        
+          
+          if (e == null) {
+            e = nil;
+          };
+          return e['$[]']("s")['$=='](best);}, $$14.$$s = self, $$14.$$arity = 1, $$14));
+        return $send(t, 'min_by', [], ($$15 = function(e){var self = $$15.$$s == null ? this : $$15.$$s;
+
+        
+          
+          if (e == null) {
+            e = nil;
+          };
+          return [e['$[]']("gy"), e['$[]']("gx")];}, $$15.$$s = self, $$15.$$arity = 1, $$15))['$[]']("pos");
+      }, $Cpu_pick_target_center$4.$$arity = -3);
+      Opal.defs(self, '$wait_after_flag_sec', $Cpu_wait_after_flag_sec$16 = function $$wait_after_flag_sec($kwargs) {
         var random, self = this;
 
         
@@ -25259,15 +25484,15 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
         if (random == null) {
           random = $$($nesting, 'Random').$new()
         };
-        return $rb_plus(0.1, $rb_times(random.$rand(), 0.2));
-      }, $Cpu_wait_after_flag_sec$4.$$arity = -1);
-      Opal.defs(self, '$wait_after_stuck_sec', $Cpu_wait_after_stuck_sec$5 = function $$wait_after_stuck_sec() {
+        return $rb_plus(0.03, $rb_times(random.$rand(), 0.07));
+      }, $Cpu_wait_after_flag_sec$16.$$arity = -1);
+      Opal.defs(self, '$wait_after_stuck_sec', $Cpu_wait_after_stuck_sec$17 = function $$wait_after_stuck_sec() {
         var self = this;
 
-        return 0.3
-      }, $Cpu_wait_after_stuck_sec$5.$$arity = 0);
+        return 0.1
+      }, $Cpu_wait_after_stuck_sec$17.$$arity = 0);
     })($nesting[0], $nesting)
-  })($nesting[0], $nesting)
+  })($nesting[0], $nesting);
 };
 
 /* Generated by Opal 1.1.1 */
@@ -25278,24 +25503,24 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
   function $rb_divide(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs / rhs : lhs['$/'](rhs);
   }
-  function $rb_times(lhs, rhs) {
-    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs * rhs : lhs['$*'](rhs);
-  }
-  function $rb_minus(lhs, rhs) {
-    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
-  }
   function $rb_plus(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs + rhs : lhs['$+'](rhs);
   }
   function $rb_lt(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs < rhs : lhs['$<'](rhs);
   }
+  function $rb_times(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs * rhs : lhs['$*'](rhs);
+  }
+  function $rb_minus(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
+  }
   function $rb_gt(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs > rhs : lhs['$>'](rhs);
   }
-  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy;
+  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy, $send = Opal.send;
 
-  Opal.add_stubs(['$require', '$min', '$max', '$<=', '$==', '$%', '$floor', '$/', '$to_f', '$[]', '$to_browser_hash', '$to_s', '$nil?', '$*', '$-', '$+', '$<', '$>', '$round', '$to_i']);
+  Opal.add_stubs(['$require', '$min', '$max', '$<=', '$==', '$%', '$floor', '$/', '$to_f', '$[]', '$to_browser_hash', '$to_s', '$nil?', '$map', '$+', '$<', '$times', '$<<', '$to_i', '$cell_axis_starts_and_sizes', '$*', '$-', '$>', '$round']);
   
   self.$require("rubyfight/game_config");
   return (function($base, $parent_nesting) {
@@ -25306,7 +25531,7 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
     (function($base, $parent_nesting) {
       var self = $module($base, 'Graphics');
 
-      var $nesting = [self].concat($parent_nesting), $Graphics_clamp$1, $Graphics_blink_even_phase$ques$2, $Graphics_asset_sheet_cell_pair$3, $Graphics_uniform_sprite_frame_rect$4, $Graphics_title_char_frame_index$5, $Graphics_sprite_fit_scale$6, $Graphics_clamp_sheet_source$7, $Graphics_scale_grid_rect_to_image$8, $Graphics_sheet_cell_rect$9;
+      var $nesting = [self].concat($parent_nesting), $Graphics_clamp$1, $Graphics_blink_even_phase$ques$2, $Graphics_asset_sheet_cell_pair$3, $Graphics_cell_axis_starts_and_sizes$4, $Graphics_uniform_sprite_frame_rect$7, $Graphics_title_char_frame_index$8, $Graphics_sprite_fit_scale$9, $Graphics_clamp_sheet_source$10, $Graphics_scale_grid_rect_to_image$11, $Graphics_sheet_cell_rect$12;
 
       
       Opal.defs(self, '$clamp', $Graphics_clamp$1 = function $$clamp(val, min_v, max_v) {
@@ -25336,29 +25561,77 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
           return c
         };
       }, $Graphics_asset_sheet_cell_pair$3.$$arity = 1);
-      Opal.defs(self, '$uniform_sprite_frame_rect', $Graphics_uniform_sprite_frame_rect$4 = function $$uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index) {
-        var self = this, col = nil, row = nil, base_w = nil, base_h = nil, sx = nil, sy = nil, sw = nil, sh = nil;
+      Opal.defs(self, '$cell_axis_starts_and_sizes', $Graphics_cell_axis_starts_and_sizes$4 = function $$cell_axis_starts_and_sizes(total, n) {
+        var $$5, $$6, self = this, c = nil, t = nil, base = nil, rem = nil, sizes = nil, starts = nil, acc = nil;
 
         
-        col = frame_index['$%'](cols);
-        row = $rb_divide(frame_index, cols);
-        base_w = $rb_divide(img_w, cols);
-        base_h = $rb_divide(img_h, rows);
-        sx = $rb_times(col, base_w);
-        sy = $rb_times(row, base_h);
-        sw = (function() {if (col['$==']($rb_minus(cols, 1))) {
-          return $rb_minus(img_w, sx)
+        c = [n, 1].$max();
+        t = [total, 0].$max();
+        base = $rb_divide(t, c);
+        rem = t['$%'](c);
+        sizes = $send(Opal.Range.$new(0,c, true), 'map', [], ($$5 = function(i){var self = $$5.$$s == null ? this : $$5.$$s;
+
+        
+          
+          if (i == null) {
+            i = nil;
+          };
+          return $rb_plus(base, (function() {if ($truthy($rb_lt(i, rem))) {
+            return 1
+          } else {
+            return 0
+          }; return nil; })());}, $$5.$$s = self, $$5.$$arity = 1, $$5));
+        starts = [];
+        acc = 0;
+        $send(c, 'times', [], ($$6 = function(i){var self = $$6.$$s == null ? this : $$6.$$s;
+
+        
+          
+          if (i == null) {
+            i = nil;
+          };
+          starts['$<<'](acc);
+          return (acc = $rb_plus(acc, sizes['$[]'](i)));}, $$6.$$s = self, $$6.$$arity = 1, $$6));
+        return [starts, sizes];
+      }, $Graphics_cell_axis_starts_and_sizes$4.$$arity = 2);
+      Opal.defs(self, '$uniform_sprite_frame_rect', $Graphics_uniform_sprite_frame_rect$7 = function $$uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index, layout) {
+        var $a, $b, self = this, fi = nil, lay = nil, $ret_or_1 = nil, nc = nil, nr = nil, $ret_or_2 = nil, col = nil, row = nil, c_st = nil, c_sz = nil, r_st = nil, r_sz = nil;
+
+        
+        
+        if (layout == null) {
+          layout = "row";
+        };
+        fi = frame_index.$to_i();
+        lay = (function() {if ($truthy((function() {if ($truthy(($ret_or_1 = layout['$=='](nil)))) {
+          return $ret_or_1
         } else {
-          return base_w
-        }; return nil; })();
-        sh = (function() {if (row['$==']($rb_minus(rows, 1))) {
-          return $rb_minus(img_h, sy)
+          return layout.$to_s()['$==']("")
+        }; return nil; })())) {
+          return "row"
         } else {
-          return base_h
+          return layout.$to_s()
         }; return nil; })();
-        return [sx, sy, sw, sh];
-      }, $Graphics_uniform_sprite_frame_rect$4.$$arity = 5);
-      Opal.defs(self, '$title_char_frame_index', $Graphics_title_char_frame_index$5 = function $$title_char_frame_index(now_ms, fps, frame_start, frame_count, cols, rows) {
+        nc = [cols, 1].$max();
+        nr = [rows, 1].$max();
+        if ($truthy((function() {if ($truthy(($ret_or_2 = lay['$==']("column")))) {
+          return $ret_or_2
+        } else {
+          return lay['$==']("column_major")
+        }; return nil; })())) {
+          
+          col = $rb_divide(fi, nr);
+          row = fi['$%'](nr);
+        } else {
+          
+          col = fi['$%'](nc);
+          row = $rb_divide(fi, nc);
+        };
+        $b = self.$cell_axis_starts_and_sizes(img_w, nc), $a = Opal.to_ary($b), (c_st = ($a[0] == null ? nil : $a[0])), (c_sz = ($a[1] == null ? nil : $a[1])), $b;
+        $b = self.$cell_axis_starts_and_sizes(img_h, nr), $a = Opal.to_ary($b), (r_st = ($a[0] == null ? nil : $a[0])), (r_sz = ($a[1] == null ? nil : $a[1])), $b;
+        return [c_st['$[]'](col), r_st['$[]'](row), c_sz['$[]'](col), r_sz['$[]'](row)];
+      }, $Graphics_uniform_sprite_frame_rect$7.$$arity = -6);
+      Opal.defs(self, '$title_char_frame_index', $Graphics_title_char_frame_index$8 = function $$title_char_frame_index(now_ms, fps, frame_start, frame_count, cols, rows) {
         var self = this, total = nil, tick = nil, span = nil, raw = nil;
 
         
@@ -25367,8 +25640,8 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
         span = [frame_count, 1].$max();
         raw = $rb_plus(frame_start, tick['$%'](span));
         return [raw, $rb_minus(total, 1)].$min();
-      }, $Graphics_title_char_frame_index$5.$$arity = 6);
-      Opal.defs(self, '$sprite_fit_scale', $Graphics_sprite_fit_scale$6 = function $$sprite_fit_scale(sw, sh, box_w, box_h, fit) {
+      }, $Graphics_title_char_frame_index$8.$$arity = 6);
+      Opal.defs(self, '$sprite_fit_scale', $Graphics_sprite_fit_scale$9 = function $$sprite_fit_scale(sw, sh, box_w, box_h, fit) {
         var self = this, f = nil;
 
         
@@ -25382,8 +25655,8 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
         } else {
           return [$rb_divide(box_w.$to_f(), sw), $rb_divide(box_h.$to_f(), sh)].$min()
         };
-      }, $Graphics_sprite_fit_scale$6.$$arity = 5);
-      Opal.defs(self, '$clamp_sheet_source', $Graphics_clamp_sheet_source$7 = function $$clamp_sheet_source(iw, ih, sx, sy, sw, sh) {
+      }, $Graphics_sprite_fit_scale$9.$$arity = 5);
+      Opal.defs(self, '$clamp_sheet_source', $Graphics_clamp_sheet_source$10 = function $$clamp_sheet_source(iw, ih, sx, sy, sw, sh) {
         var self = this, x = nil, y = nil, w = nil, h = nil;
 
         
@@ -25404,16 +25677,16 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
         if ($truthy($rb_gt($rb_plus(y, h), ih))) {
           h = $rb_minus(ih, y)};
         return [x, y, [w, 0].$max(), [h, 0].$max()];
-      }, $Graphics_clamp_sheet_source$7.$$arity = 6);
-      Opal.defs(self, '$scale_grid_rect_to_image', $Graphics_scale_grid_rect_to_image$8 = function $$scale_grid_rect_to_image(gx, gy, gw, gh, img_nat_w, img_nat_h, sheet_w, sheet_h) {
+      }, $Graphics_clamp_sheet_source$10.$$arity = 6);
+      Opal.defs(self, '$scale_grid_rect_to_image', $Graphics_scale_grid_rect_to_image$11 = function $$scale_grid_rect_to_image(gx, gy, gw, gh, img_nat_w, img_nat_h, sheet_w, sheet_h) {
         var self = this, fx = nil, fy = nil;
 
         
         fx = $rb_divide(img_nat_w.$to_f(), sheet_w);
         fy = $rb_divide(img_nat_h.$to_f(), sheet_h);
         return [$rb_times(gx, fx).$round(), $rb_times(gy, fy).$round(), $rb_times(gw, fx).$round(), $rb_times(gh, fy).$round()];
-      }, $Graphics_scale_grid_rect_to_image$8.$$arity = 8);
-      Opal.defs(self, '$sheet_cell_rect', $Graphics_sheet_cell_rect$9 = function $$sheet_cell_rect(gx, gy, gw, gh, cols, rows, col, row, cell_inset) {
+      }, $Graphics_scale_grid_rect_to_image$11.$$arity = 8);
+      Opal.defs(self, '$sheet_cell_rect', $Graphics_sheet_cell_rect$12 = function $$sheet_cell_rect(gx, gy, gw, gh, cols, rows, col, row, cell_inset) {
         var self = this, cw = nil, ch = nil, sx = nil, sy = nil, sw = nil, sh = nil, ins = nil;
 
         
@@ -25439,7 +25712,7 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
           sw = $rb_minus(sw, $rb_times(ins, 2));
           sh = $rb_minus(sh, $rb_times(ins, 2));};
         return [sx, sy, sw, sh];
-      }, $Graphics_sheet_cell_rect$9.$$arity = 9);
+      }, $Graphics_sheet_cell_rect$12.$$arity = 9);
     })($nesting[0], $nesting)
   })($nesting[0], $nesting);
 };
@@ -25563,7 +25836,7 @@ Opal.modules["rubyfight/movement"] = function(Opal) {
 
       
       Opal.const_set($nesting[0], 'ARRIVAL_EPSILON_PX', 5.0);
-      Opal.const_set($nesting[0], 'NUDGE_CENTER_FACTOR', 0.05);
+      Opal.const_set($nesting[0], 'NUDGE_CENTER_FACTOR', 0.07);
       Opal.defs(self, '$speed_for_time_remaining', $Movement_speed_for_time_remaining$1 = function $$speed_for_time_remaining(time_remaining) {
         var self = this, c = nil, rush = nil, base = nil, mult = nil;
 
@@ -25754,7 +26027,7 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
       Opal.defs(self, '$to_browser_hash', $UiLayout_to_browser_hash$1 = function $$to_browser_hash() {
         var self = this;
 
-        return $hash2(["title"], {"title": $hash2(["logoCenterX", "juggingY", "mainTitleY", "subRubykaigiY", "subTerritoryY", "menu", "mascotLeft", "mascotRight", "mascotPixel", "footerControlsY", "footerFullscreenY", "footerCopyrightY", "parts"], {"logoCenterX": 480, "juggingY": 30, "mainTitleY": 108, "subRubykaigiY": 172, "subTerritoryY": 196, "menu": $hash2(["y"], {"y": 260}), "mascotLeft": $hash2(["x", "y"], {"x": 124, "y": 308}), "mascotRight": $hash2(["x", "y"], {"x": 836, "y": 308}), "mascotPixel": 3, "footerControlsY": 466, "footerFullscreenY": 486, "footerCopyrightY": 508, "parts": $hash2(["background", "logo", "charLeft", "charRight"], {"background": $hash2(["x", "y", "w", "h", "fit"], {"x": 0, "y": 0, "w": 960, "h": 540, "fit": "cover"}), "logo": $hash2(["x", "y", "w", "h", "fit"], {"x": 136, "y": 18, "w": 688, "h": 252, "fit": "contain"}), "charLeft": $hash2(["x", "y", "w", "h", "fit"], {"x": 70, "y": 232, "w": 208, "h": 224, "fit": "contain"}), "charRight": $hash2(["x", "y", "w", "h", "fit"], {"x": 682, "y": 232, "w": 208, "h": 224, "fit": "contain"})})})})
+        return $hash2(["title"], {"title": $hash2(["logoCenterX", "juggingY", "mainTitleY", "subRubykaigiY", "subTerritoryY", "menu", "mascotLeft", "mascotRight", "mascotPixel", "footerControlsY", "footerFullscreenY", "footerCopyrightY", "parts"], {"logoCenterX": 480, "juggingY": 30, "mainTitleY": 108, "subRubykaigiY": 172, "subTerritoryY": 196, "menu": $hash2(["y"], {"y": 260}), "mascotLeft": $hash2(["x", "y"], {"x": 124, "y": 308}), "mascotRight": $hash2(["x", "y"], {"x": 836, "y": 308}), "mascotPixel": 3, "footerControlsY": 466, "footerFullscreenY": 486, "footerCopyrightY": 508, "parts": $hash2(["background", "logo", "charLeft", "charRight"], {"background": $hash2(["x", "y", "w", "h", "fit"], {"x": 0, "y": 0, "w": 960, "h": 540, "fit": "cover"}), "logo": $hash2(["x", "y", "w", "h", "fit"], {"x": 136, "y": 18, "w": 688, "h": 252, "fit": "contain"}), "charLeft": $hash2(["x", "y", "w", "h", "fit", "vAlign"], {"x": 70, "y": 232, "w": 208, "h": 224, "fit": "contain", "vAlign": "bottom"}), "charRight": $hash2(["x", "y", "w", "h", "fit", "vAlign"], {"x": 682, "y": 232, "w": 208, "h": 224, "fit": "contain", "vAlign": "bottom"})})})})
       }, $UiLayout_to_browser_hash$1.$$arity = 0)
     })($nesting[0], $nesting)
   })($nesting[0], $nesting)
@@ -25876,8 +26149,9 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
       
       window.RUBYFIGHT = window.RUBYFIGHT || {};
       var _c = c;
-      window.RUBYFIGHT.cpuPickTarget = function(grid, maskRows) {
-        var a = _c['$pick_target_center'](grid, maskRows);
+      window.RUBYFIGHT.cpuPickTarget = function(grid, maskRows, cpuFlags) {
+        var fl = (cpuFlags == null || cpuFlags === undefined) ? Opal.nil : cpuFlags;
+        var a = _c['$pick_target_center'](grid, maskRows, fl);
         if (a === Opal.nil) return null;
         var N = window.RUBYFIGHT.__rbNum;
         return [N(a[0]), N(a[1])];
@@ -25909,8 +26183,9 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
         var N = window.RUBYFIGHT.__rbNum;
         return [N(c[0]), N(c[1])];
       };
-      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi) {
-        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi);
+      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi, frameLayout) {
+        var fl = (frameLayout == null || frameLayout === undefined || frameLayout === '') ? 'row' : ('' + frameLayout);
+        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi, fl);
         var N = window.RUBYFIGHT.__rbNum;
         return [N(r[0]), N(r[1]), N(r[2]), N(r[3])];
       };

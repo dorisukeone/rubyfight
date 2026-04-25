@@ -36,12 +36,12 @@ class CpuTest < Minitest::Test
     r = Random.new(1)
     20.times do
       w = Rubyfight::Cpu.wait_after_flag_sec(random: r)
-      assert_operator w, :>=, 0.1
-      assert_operator w, :<, 0.3
+      assert_operator w, :>=, 0.03
+      assert_operator w, :<, 0.11
     end
   end
 
   def test_wait_after_stuck
-    assert_in_delta 0.3, Rubyfight::Cpu.wait_after_stuck_sec, 1e-9
+    assert_in_delta 0.1, Rubyfight::Cpu.wait_after_stuck_sec, 1e-9
   end
 end

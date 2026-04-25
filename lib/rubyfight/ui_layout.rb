@@ -19,8 +19,9 @@ module Rubyfight
           'parts' => {
             'background' => { 'x' => 0, 'y' => 0, 'w' => 960, 'h' => 540, 'fit' => 'cover' },
             'logo' => { 'x' => 136, 'y' => 18, 'w' => 688, 'h' => 252, 'fit' => 'contain' },
-            'charLeft' => { 'x' => 70, 'y' => 232, 'w' => 208, 'h' => 224, 'fit' => 'contain' },
-            'charRight' => { 'x' => 682, 'y' => 232, 'w' => 208, 'h' => 224, 'fit' => 'contain' }
+            # 左右同じ y/h で足元一致。w 同幅・画面中心対称。枠内は下辺=足元・水平中心（vAlign: bottom）
+            'charLeft' => { 'x' => 70, 'y' => 232, 'w' => 208, 'h' => 224, 'fit' => 'contain', 'vAlign' => 'bottom' },
+            'charRight' => { 'x' => 682, 'y' => 232, 'w' => 208, 'h' => 224, 'fit' => 'contain', 'vAlign' => 'bottom' }
           }
         }
       }

@@ -4,7 +4,7 @@ require 'rubyfight/graphics'
 module Rubyfight
   module Movement
     ARRIVAL_EPSILON_PX = 5.0
-    NUDGE_CENTER_FACTOR = 0.05
+    NUDGE_CENTER_FACTOR = 0.07
 
     def self.speed_for_time_remaining(time_remaining)
       c = GameConfig.to_browser_hash

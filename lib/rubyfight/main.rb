@@ -98,8 +98,9 @@ module Rubyfight
     %x{
       window.RUBYFIGHT = window.RUBYFIGHT || {};
       var _c = #{c};
-      window.RUBYFIGHT.cpuPickTarget = function(grid, maskRows) {
-        var a = _c['$pick_target_center'](grid, maskRows);
+      window.RUBYFIGHT.cpuPickTarget = function(grid, maskRows, cpuFlags) {
+        var fl = (cpuFlags == null || cpuFlags === undefined) ? Opal.nil : cpuFlags;
+        var a = _c['$pick_target_center'](grid, maskRows, fl);
         if (a === Opal.nil) return null;
         var N = window.RUBYFIGHT.__rbNum;
         return [N(a[0]), N(a[1])];
@@ -129,8 +130,9 @@ module Rubyfight
         var N = window.RUBYFIGHT.__rbNum;
         return [N(c[0]), N(c[1])];
       };
-      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi) {
-        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi);
+      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi, frameLayout) {
+        var fl = (frameLayout == null || frameLayout === undefined || frameLayout === '') ? 'row' : ('' + frameLayout);
+        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi, fl);
         var N = window.RUBYFIGHT.__rbNum;
         return [N(r[0]), N(r[1]), N(r[2]), N(r[3])];
       };
