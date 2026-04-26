@@ -41,8 +41,6 @@ module Rubyfight
       case menu_index
       when 0 then 'vs_cpu'
       when 1 then 'vs_2p'
-      when 2 then 'options'
-      when 3 then 'credits'
       end
     end
   end

@@ -1,0 +1,2 @@
+# GitHub Linguist: Opal が吐く配布用 JS は生成物として統計から外す（正本は lib/rubyfight/*.rb）
+build/** linguist-generated=true

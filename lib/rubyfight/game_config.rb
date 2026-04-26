@@ -34,6 +34,26 @@ module Rubyfight
         },
         'GAME_TIME' => 55,
         'RUSH_TIME' => 15,
+        # プレイ中の歩行スプライト（1x4 横シート）。P2 は白ベタ背景を周縁キーで透過
+        'PLAY_P1_SHEET' => {
+          'url' => 'assets/play/p1_walk.png',
+          'cols' => 4,
+          'rows' => 1,
+          'frameLayout' => 'row',
+          'walkCyclesPerSec' => 10,
+          'removeMatte' => true,
+          'matteDarkMax' => 40,
+          'matteColorMin' => 45
+        },
+        'PLAY_P2_SHEET' => {
+          'url' => 'assets/play/p2_walk.png',
+          'cols' => 4,
+          'rows' => 1,
+          'frameLayout' => 'row',
+          'walkCyclesPerSec' => 10,
+          'removeEdgeWhite' => true,
+          'keyMinRgb' => 248
+        },
         'TITLE_PARTS' => {
           'background' => '',
           'logo' => 'assets/title/logo.png',
@@ -44,21 +64,24 @@ module Rubyfight
         'LOGO_KEY_MAX_RGB' => 32,
         'TITLE_CHAR_RED_SHEET' => {
           'url' => 'assets/title/char_red_sheet.png',
-          # コマ境界は「幅が cols の倍数・高さが rows の倍数」必須（割り切れないと表示が揺れる）
+          # 待機左: 1x4 横並び・アイドル
           'cols' => 4,
-          'rows' => 4,
+          'rows' => 1,
           'frameLayout' => 'row',
           'fps' => 6,
           'frameStart' => 0,
-          # 先頭行から順に使うコマ数（1=静止）。4x4 シートで歩行 4 コマ分など
           'frameCount' => 4,
-          'removeEdgeBlack' => true,
+          'removeEdgeBlack' => false,
+          'removeMatte' => true,
+          'matteDarkMax' => 40,
+          'matteColorMin' => 45,
           'keyMaxRgb' => 32
         },
         'TITLE_CHAR_BLUE_SHEET' => {
           'url' => 'assets/title/char_blue_sheet.png',
+          # 待機右: 1x4 横並び・アイドル
           'cols' => 4,
-          'rows' => 4,
+          'rows' => 1,
           'frameLayout' => 'row',
           'fps' => 6,
           'frameStart' => 0,
