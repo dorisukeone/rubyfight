@@ -1,2 +1,3 @@
-# GitHub Linguist: Opal が吐く配布用 JS は生成物として統計から外す（正本は lib/rubyfight/*.rb）
+# GitHub Linguist: 言語バーは Ruby（lib）を主役に。ホスト HTML / Opal 出力は統計から外す
 build/** linguist-generated=true
+index.html linguist-detectable=false
