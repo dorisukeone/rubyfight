@@ -21,13 +21,20 @@ module Rubyfight
       c.nil? ? [0, 0] : c
     end
 
-    # 余りピクセルを先頭列・行に加算（index.html getUniformSpriteFrameRect と同一ロジック）
-    def self.cell_axis_starts_and_sizes(total, n)
+    # 余りピクセルを先頭列に足す（既定）／末尾列に足す（remainder_to_end。index.html と同一）
+    def self.cell_axis_starts_and_sizes(total, n, remainder_to_end = false)
       c = [n, 1].max
       t = [total, 0].max
       base = t / c
       rem = t % c
-      sizes = (0...c).map { |i| base + (i < rem ? 1 : 0) }
+      re = remainder_to_end == true
+      sizes = (0...c).map do |i|
+        if re
+          base + (rem > 0 && i >= c - rem ? 1 : 0)
+        else
+          base + (i < rem ? 1 : 0)
+        end
+      end
       starts = []
       acc = 0
       c.times do |i|
@@ -40,11 +47,12 @@ module Rubyfight
     # index.html getUniformSpriteFrameRect
     # layout: 'row' = 行メジャー（左→右で次の行。一般的な歩行シート向け）
     #         'column' = 列メジャー（上→下で次の列。縦方向にコマを置いたループ向け）
-    def self.uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index, layout = 'row')
+    def self.uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index, layout = 'row', remainder_to_end = false)
       fi = frame_index.to_i
       lay = (layout == nil || layout.to_s == '') ? 'row' : layout.to_s
       nc = [cols, 1].max
       nr = [rows, 1].max
+      re = remainder_to_end == true
       if lay == 'column' || lay == 'column_major'
         col = fi / nr
         row = fi % nr
@@ -52,8 +60,8 @@ module Rubyfight
         col = fi % nc
         row = fi / nc
       end
-      c_st, c_sz = cell_axis_starts_and_sizes(img_w, nc)
-      r_st, r_sz = cell_axis_starts_and_sizes(img_h, nr)
+      c_st, c_sz = cell_axis_starts_and_sizes(img_w, nc, re)
+      r_st, r_sz = cell_axis_starts_and_sizes(img_h, nr, re)
       [c_st[col], r_st[row], c_sz[col], r_sz[row]]
     end
 

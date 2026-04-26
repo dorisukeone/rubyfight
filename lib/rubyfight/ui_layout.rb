@@ -21,7 +21,7 @@ module Rubyfight
             'background' => { 'x' => 0, 'y' => 0, 'w' => 960, 'h' => 540, 'fit' => 'cover' },
             'logo' => { 'x' => 136, 'y' => 32, 'w' => 688, 'h' => 252, 'fit' => 'contain' },
             'charLeft' => { 'x' => 216, 'y' => 288, 'w' => 128, 'h' => 166, 'fit' => 'contain' },
-            'charRight' => { 'x' => 616, 'y' => 288, 'w' => 128, 'h' => 166, 'fit' => 'contain' }
+            'charRight' => { 'x' => 622, 'y' => 288, 'w' => 128, 'h' => 166, 'fit' => 'contain' }
           }
         }
       }

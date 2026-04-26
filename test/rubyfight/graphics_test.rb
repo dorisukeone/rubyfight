@@ -27,6 +27,16 @@ class GraphicsTest < Minitest::Test
     assert_equal 40, sh
   end
 
+  def test_uniform_sprite_frame_remainder_to_end
+    g = Rubyfight::Graphics
+    # 1024/24: 従来は先頭 16 列が 43px。末尾に余すと先頭 8 列は 42px
+    _sx, _sy, sw, _sh = g.uniform_sprite_frame_rect(1024, 59, 24, 1, 0, 'row', true)
+    assert_equal 42, sw
+    _sx2, = g.uniform_sprite_frame_rect(1024, 59, 24, 1, 10, 'row', true)
+    # 列 10 は「太い」側: 0..7 が 42、8 列目から 43
+    assert_equal(8 * 42 + 2 * 43, _sx2, '10 列目の x 始点')
+  end
+
   def test_uniform_sprite_frame_column
     g = Rubyfight::Graphics
     # 2x2, 列メジャー: 0(0,0) 1(0,1) 2(1,0) 3(1,1)

@@ -157,20 +157,25 @@
         matteColorMin: 34
       },
 
-      // タイトル右・青: 1x4 アイドル（横シート）
+      // タイトル右・青: 等分割 1024÷24。42/43 混在で max 幅基準の伸ばしが出るのを抑えるため sheetSourceUniformMax: false
       TITLE_CHAR_BLUE_SHEET: {
-        url: 'assets/title/char_blue_sheet.png',
-        cols: 4,
+        url: 'assets/title/char_blue_sheet.png?v=40',
+        cols: 24,
         rows: 1,
         frameLayout: 'row',
-        fps: 6,
+        fps: 24,
         frameStart: 0,
-        frameCount: 4,
+        frameCount: 24,
+        fit: 'contain',
+        clip: false,
+        sheetVAlign: 'center',
+        sheetSourceUniformMax: false,
+        atlasSourceExact: false,
+        // 隣コマが滲むときは増やす（2 だと不十分なことがある）
+        sheetSourceTrimEndX: 4,
+        keyByMaxChannel: 32,
         removeEdgeBlack: false,
-        removeMatte: true,
-        matteDarkMax: 40,
-        matteColorMin: 34,
-        keyMaxRgb: 32
+        removeMatte: false
       },
 
       // タイトル／プレイ共通の全面背景（空ならシートのパターン or procedural）
@@ -241,7 +246,7 @@
           background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
           logo: { x: 136, y: 32, w: 688, h: 252, fit: 'contain' },
           charLeft: { x: 216, y: 288, w: 128, h: 166, fit: 'contain' },
-          charRight: { x: 616, y: 288, w: 128, h: 166, fit: 'contain' }
+            charRight: { x: 622, y: 288, w: 128, h: 166, fit: 'contain' }
         }
       }
     };
@@ -871,15 +876,20 @@
       return { sx: x, sy: y, sw: Math.max(0, w), sh: Math.max(0, h) };
     }
 
-    /** 余りピクセルを先頭セル列に加算（従来の「最後の列が全部飲む」だと隣接コマで 1px 揺れやすい） */
-    function cellAxisStartsAndSizes(total, n) {
+    /** 余りピクセルを先頭列に足す（既定）／末尾列に足す（remainderToEnd。エクスポートによって使い分け） */
+    function cellAxisStartsAndSizes(total, n, remainderToEnd) {
       const c = Math.max(1, Math.floor(n));
       const t = Math.max(0, Math.floor(total));
       const base = Math.floor(t / c);
       const rem = t % c;
+      const re = remainderToEnd === true;
       const sizes = [];
       for (let i = 0; i < c; i++) {
-        sizes.push(base + (i < rem ? 1 : 0));
+        if (re) {
+          sizes.push(base + (rem > 0 && i >= c - rem ? 1 : 0));
+        } else {
+          sizes.push(base + (i < rem ? 1 : 0));
+        }
       }
       const starts = [];
       let acc = 0;
@@ -890,7 +900,7 @@
       return { starts, sizes };
     }
 
-    function getUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex, frameLayout) {
+    function getUniformSpriteFrameRect(imgW, imgH, cols, rows, frameIndex, frameLayout, remainderToEnd) {
       const fi = Math.max(0, Math.floor(Number(frameIndex)) || 0);
       const fl = (frameLayout != null && String(frameLayout) !== '') ? String(frameLayout) : 'row';
       const nc = Math.max(1, Math.floor(cols) || 1);
@@ -903,8 +913,8 @@
         col = fi % nc;
         row = Math.floor(fi / nc);
       }
-      const colAxis = cellAxisStartsAndSizes(imgW, nc);
-      const rowAxis = cellAxisStartsAndSizes(imgH, nr);
+      const colAxis = cellAxisStartsAndSizes(imgW, nc, remainderToEnd);
+      const rowAxis = cellAxisStartsAndSizes(imgH, nr, remainderToEnd);
       const sx = colAxis.starts[col] || 0;
       const sy = rowAxis.starts[row] || 0;
       const sw = colAxis.sizes[col] || 0;
@@ -944,7 +954,9 @@
       // 先に描画サイズを整数化してから位置を決める（浮動 dw と Math.round(dx) の組み合わせでフレーム間 1px 横揺れしやすい）
       const dwi = Math.max(1, Math.round(dw));
       const dhi = Math.max(1, Math.round(dh));
-      const dx = Math.round(x + (w - dwi) / 2);
+      const nudgeX = isFinite(rect.drawOffsetX) ? Math.trunc(rect.drawOffsetX) : 0;
+      const nudgeY = isFinite(rect.drawOffsetY) ? Math.trunc(rect.drawOffsetY) : 0;
+      const dx = Math.round(x + (w - dwi) / 2) + nudgeX;
       let dy;
       if (vAlign === 'bottom') {
         dy = Math.round(y + h - dhi);
@@ -953,6 +965,7 @@
       } else {
         dy = Math.round(y + (h - dhi) / 2);
       }
+      dy += nudgeY;
       const doClip = rect.clip && fstr === 'cover';
       if (doClip) {
         ctx.save();
@@ -1014,6 +1027,7 @@
       let f = Math.min(start + (tick % Math.max(1, count)), total - 1);
       f = Math.max(0, Math.floor(Number(f)) || 0);
       const frameLayout = (S.frameLayout != null && S.frameLayout !== '') ? S.frameLayout : 'row';
+      const remEnd = S.sheetCellRemainderToEnd === true;
       let sx; let sy; let sw; let sh; let uW; let uH;
       if (useFixedFrames) {
         let col; let row;
@@ -1031,32 +1045,65 @@
         uW = fw;
         uH = fh;
       } else {
-        const r0 = getUniformSpriteFrameRect(w, h, cols, rows, f, frameLayout);
+        const r0 = getUniformSpriteFrameRect(w, h, cols, rows, f, frameLayout, remEnd);
         sx = r0.sx;
         sy = r0.sy;
         sw = r0.sw;
         sh = r0.sh;
-        const colAxis = cellAxisStartsAndSizes(w, cols);
-        const rowAxis = cellAxisStartsAndSizes(h, rows);
+        const colAxis = cellAxisStartsAndSizes(w, cols, remEnd);
+        const rowAxis = cellAxisStartsAndSizes(h, rows, remEnd);
         uW = Math.max.apply(null, colAxis.sizes);
         uH = Math.max.apply(null, rowAxis.sizes);
       }
-      const inset = Math.max(0, Math.floor(Number(S.sheetSourceInset != null ? S.sheetSourceInset : 0)));
-      if (inset > 0 && sw > inset * 2 && sh > inset * 2) {
-        sx += inset;
-        sy += inset;
-        sw -= inset * 2;
-        sh -= inset * 2;
-        uW = Math.max(1, uW - inset * 2);
-        uH = Math.max(1, uH - inset * 2);
+      {
+        const legacy = Math.max(0, Math.floor(Number(S.sheetSourceInset != null ? S.sheetSourceInset : 0)));
+        const hasIX = S.sheetSourceInsetX != null && S.sheetSourceInsetX !== '';
+        const hasIY = S.sheetSourceInsetY != null && S.sheetSourceInsetY !== '';
+        const ix = hasIX ? Math.max(0, Math.floor(Number(S.sheetSourceInsetX))) : legacy;
+        const iy = hasIY ? Math.max(0, Math.floor(Number(S.sheetSourceInsetY))) : legacy;
+        if (ix > 0 && sw > ix * 2) {
+          sx += ix;
+          sw -= ix * 2;
+          uW = Math.max(1, uW - ix * 2);
+        }
+        if (iy > 0 && sh > iy * 2) {
+          sy += iy;
+          sh -= iy * 2;
+          uH = Math.max(1, uH - iy * 2);
+        }
       }
       const clipped = clampSheetSource(img, sx, sy, sw, sh);
       sx = clipped.sx;
       sy = clipped.sy;
       sw = clipped.sw;
       sh = clipped.sh;
+      // 行シートの右端 1 列は隣コマ色が混ざることが多い。左は残して右だけ削る（左右対称 inset より欠け感が少ない）
+      const trimEndX = Math.max(0, Math.floor(Number(S.sheetSourceTrimEndX != null ? S.sheetSourceTrimEndX : 0)));
+      if (trimEndX > 0 && sw > trimEndX) {
+        sw -= trimEndX;
+        uW = Math.max(1, uW - trimEndX);
+      }
+      {
+        const ox = Math.trunc(Number(S.sheetSourceOffsetX != null ? S.sheetSourceOffsetX : 0));
+        const oy = Math.trunc(Number(S.sheetSourceOffsetY != null ? S.sheetSourceOffsetY : 0));
+        if (ox !== 0) sx += ox;
+        if (oy !== 0) sy += oy;
+        if (ox !== 0 || oy !== 0) {
+          const c2 = clampSheetSource(img, sx, sy, sw, sh);
+          sx = c2.sx;
+          sy = c2.sy;
+          sw = c2.sw;
+          sh = c2.sh;
+        }
+      }
+      const dox = S.drawOffsetX;
+      const doy = S.drawOffsetY;
       const sm = S.scaleMul != null ? Number(S.scaleMul) : null;
       const atlasExact = S.atlasSourceExact === true;
+      // 等分割で列幅 42/43px が混在する場合、uW=列 max に合わせると輪郭が引き伸ばされて左右が欠けたように見える。sheetSourceUniformMax: false なら当該フレームの sw/sh で一様化（1px 横揺れの可能性あり）
+      const useUniformMax = S.sheetSourceUniformMax !== false;
+      const uCellW = useUniformMax ? uW : sw;
+      const uCellH = useUniformMax ? uH : sh;
       const r = {
         ...rect,
         vAlign: S.sheetVAlign != null && S.sheetVAlign !== '' ? S.sheetVAlign : 'bottom',
@@ -1064,8 +1111,10 @@
         fit: S.fit != null && S.fit !== '' ? S.fit : (rect.fit != null ? rect.fit : 'contain'),
         clip: S.clip === true || rect.clip === true,
         scaleMul: isFinite(sm) && sm > 0 ? sm : undefined,
-        uniformSourceCell: { w: uW, h: uH },
-        atlasSourceExact: atlasExact
+        uniformSourceCell: { w: uCellW, h: uCellH },
+        atlasSourceExact: atlasExact,
+        drawOffsetX: dox != null && dox !== '' && isFinite(Number(dox)) ? Math.trunc(Number(dox)) : 0,
+        drawOffsetY: doy != null && doy !== '' && isFinite(Number(doy)) ? Math.trunc(Number(doy)) : 0
       };
       drawSpriteFrameInRect(img, sx, sy, sw, sh, r);
     }
@@ -1255,9 +1304,11 @@
             const dm = S.matteDarkMax != null ? S.matteDarkMax : 40;
             const cm = S.matteColorMin != null ? S.matteColorMin : 45;
             titleCharBlueSheetImg = removeBorderConnectedDarkMatte(img, dm, cm);
-          } else if (img && S.removeEdgeBlack !== false) {
+          } else if (img && S.removeEdgeBlack) {
             const km = S.keyMaxRgb != null ? S.keyMaxRgb : CONFIG.LOGO_KEY_MAX_RGB;
             titleCharBlueSheetImg = removeEdgeConnectedNearBlack(img, km);
+          } else if (img && S.keyByMaxChannel != null && isFinite(Number(S.keyByMaxChannel))) {
+            titleCharBlueSheetImg = keyDarkByMaxChannel(img, Number(S.keyByMaxChannel));
           } else {
             titleCharBlueSheetImg = img;
           }
@@ -2707,7 +2758,7 @@
       const total = cols * rows;
       const fi = Math.max(0, Math.min(total - 1, Math.floor(Number(walkFrame)) || 0));
       const layout = (S.frameLayout != null && S.frameLayout !== '') ? String(S.frameLayout) : 'row';
-      const { sx, sy, sw, sh } = getUniformSpriteFrameRect(iw, ih, cols, rows, fi, layout);
+      const { sx, sy, sw, sh } = getUniformSpriteFrameRect(iw, ih, cols, rows, fi, layout, false);
       if (sw <= 0 || sh <= 0) return;
       const boxW = CONFIG.PLAYER_SIZE * 1.75;
       const boxH = CONFIG.PLAYER_SIZE * 1.85;

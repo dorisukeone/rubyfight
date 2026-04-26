@@ -24735,7 +24735,7 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
         grid_rows = 18;
         field_w = $rb_times(tile, grid_cols);
         field_h = $rb_times(tile, grid_rows);
-        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "PLAYER_VIS_SMOOTH", "COLORS", "GAME_TIME", "RUSH_TIME", "PLAY_P1_SHEET", "PLAY_P2_SHEET", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.4, "CPU_SPEED_MULTIPLIER": 1.42, "PLAYER_VIS_SMOOTH": 0, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 55, "RUSH_TIME": 15, "PLAY_P1_SHEET": $hash2(["urlLeft", "urlRight", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeMatte", "matteDarkMax", "matteColorMin"], {"urlLeft": "assets/play/p1_walk_left.png", "urlRight": "assets/play/p1_walk_right.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45}), "PLAY_P2_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeEdgeWhite", "keyMinRgb"], {"url": "assets/play/p2_walk.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeEdgeWhite": true, "keyMinRgb": 248}), "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "frameWidth", "frameHeight", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "keyByMaxChannel", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin"], {"url": "assets/title/char_red_sheet.png?v=17", "cols": 24, "rows": 1, "frameWidth": 57, "frameHeight": 80, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "bottom", "keyByMaxChannel": 24, "removeEdgeBlack": false, "removeMatte": false, "matteDarkMax": 40, "matteColorMin": 34}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "fps", "frameStart", "frameCount", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin", "keyMaxRgb"], {"url": "assets/title/char_blue_sheet.png", "cols": 4, "rows": 1, "frameLayout": "row", "fps": 6, "frameStart": 0, "frameCount": 4, "removeEdgeBlack": false, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 34, "keyMaxRgb": 32}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
+        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "PLAYER_VIS_SMOOTH", "COLORS", "GAME_TIME", "RUSH_TIME", "PLAY_P1_SHEET", "PLAY_P2_SHEET", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.4, "CPU_SPEED_MULTIPLIER": 1.42, "PLAYER_VIS_SMOOTH": 0, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 55, "RUSH_TIME": 15, "PLAY_P1_SHEET": $hash2(["urlLeft", "urlRight", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeMatte", "matteDarkMax", "matteColorMin"], {"urlLeft": "assets/play/p1_walk_left.png", "urlRight": "assets/play/p1_walk_right.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45}), "PLAY_P2_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeEdgeWhite", "keyMinRgb"], {"url": "assets/play/p2_walk.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeEdgeWhite": true, "keyMinRgb": 248}), "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "frameWidth", "frameHeight", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "keyByMaxChannel", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin"], {"url": "assets/title/char_red_sheet.png?v=17", "cols": 24, "rows": 1, "frameWidth": 57, "frameHeight": 80, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "bottom", "keyByMaxChannel": 24, "removeEdgeBlack": false, "removeMatte": false, "matteDarkMax": 40, "matteColorMin": 34}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "sheetSourceUniformMax", "atlasSourceExact", "sheetSourceTrimEndX", "keyByMaxChannel", "removeEdgeBlack", "removeMatte"], {"url": "assets/title/char_blue_sheet.png?v=40", "cols": 24, "rows": 1, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "center", "sheetSourceUniformMax": false, "atlasSourceExact": false, "sheetSourceTrimEndX": 4, "keyByMaxChannel": 32, "removeEdgeBlack": false, "removeMatte": false}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
       }, $GameConfig_to_browser_hash$1.$$arity = 0);
       Opal.defs(self, '$field_width', $GameConfig_field_width$2 = function $$field_width() {
         var self = this;
@@ -25506,21 +25506,24 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
   function $rb_plus(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs + rhs : lhs['$+'](rhs);
   }
+  function $rb_gt(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs > rhs : lhs['$>'](rhs);
+  }
+  function $rb_ge(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs >= rhs : lhs['$>='](rhs);
+  }
+  function $rb_minus(lhs, rhs) {
+    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
+  }
   function $rb_lt(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs < rhs : lhs['$<'](rhs);
   }
   function $rb_times(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs * rhs : lhs['$*'](rhs);
   }
-  function $rb_minus(lhs, rhs) {
-    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
-  }
-  function $rb_gt(lhs, rhs) {
-    return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs > rhs : lhs['$>'](rhs);
-  }
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy, $send = Opal.send;
 
-  Opal.add_stubs(['$require', '$min', '$max', '$<=', '$==', '$%', '$floor', '$/', '$to_f', '$[]', '$to_browser_hash', '$to_s', '$nil?', '$map', '$+', '$<', '$times', '$<<', '$to_i', '$cell_axis_starts_and_sizes', '$*', '$-', '$>', '$round']);
+  Opal.add_stubs(['$require', '$min', '$max', '$<=', '$==', '$%', '$floor', '$/', '$to_f', '$[]', '$to_browser_hash', '$to_s', '$nil?', '$map', '$+', '$>', '$>=', '$-', '$<', '$times', '$<<', '$to_i', '$cell_axis_starts_and_sizes', '$*', '$round']);
   
   self.$require("rubyfight/game_config");
   return (function($base, $parent_nesting) {
@@ -25561,26 +25564,43 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
           return c
         };
       }, $Graphics_asset_sheet_cell_pair$3.$$arity = 1);
-      Opal.defs(self, '$cell_axis_starts_and_sizes', $Graphics_cell_axis_starts_and_sizes$4 = function $$cell_axis_starts_and_sizes(total, n) {
-        var $$5, $$6, self = this, c = nil, t = nil, base = nil, rem = nil, sizes = nil, starts = nil, acc = nil;
+      Opal.defs(self, '$cell_axis_starts_and_sizes', $Graphics_cell_axis_starts_and_sizes$4 = function $$cell_axis_starts_and_sizes(total, n, remainder_to_end) {
+        var $$5, $$6, self = this, c = nil, t = nil, base = nil, rem = nil, re = nil, sizes = nil, starts = nil, acc = nil;
 
         
+        
+        if (remainder_to_end == null) {
+          remainder_to_end = false;
+        };
         c = [n, 1].$max();
         t = [total, 0].$max();
         base = $rb_divide(t, c);
         rem = t['$%'](c);
-        sizes = $send(Opal.Range.$new(0,c, true), 'map', [], ($$5 = function(i){var self = $$5.$$s == null ? this : $$5.$$s;
+        re = remainder_to_end['$=='](true);
+        sizes = $send(Opal.Range.$new(0,c, true), 'map', [], ($$5 = function(i){var self = $$5.$$s == null ? this : $$5.$$s, $ret_or_1 = nil;
 
         
           
           if (i == null) {
             i = nil;
           };
-          return $rb_plus(base, (function() {if ($truthy($rb_lt(i, rem))) {
-            return 1
+          if ($truthy(re)) {
+            return $rb_plus(base, (function() {if ($truthy((function() {if ($truthy(($ret_or_1 = $rb_gt(rem, 0)))) {
+              return $rb_ge(i, $rb_minus(c, rem))
+            } else {
+              return $ret_or_1
+            }; return nil; })())) {
+              return 1
+            } else {
+              return 0
+            }; return nil; })())
           } else {
-            return 0
-          }; return nil; })());}, $$5.$$s = self, $$5.$$arity = 1, $$5));
+            return $rb_plus(base, (function() {if ($truthy($rb_lt(i, rem))) {
+              return 1
+            } else {
+              return 0
+            }; return nil; })())
+          };}, $$5.$$s = self, $$5.$$arity = 1, $$5));
         starts = [];
         acc = 0;
         $send(c, 'times', [], ($$6 = function(i){var self = $$6.$$s == null ? this : $$6.$$s;
@@ -25593,18 +25613,22 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
           starts['$<<'](acc);
           return (acc = $rb_plus(acc, sizes['$[]'](i)));}, $$6.$$s = self, $$6.$$arity = 1, $$6));
         return [starts, sizes];
-      }, $Graphics_cell_axis_starts_and_sizes$4.$$arity = 2);
-      Opal.defs(self, '$uniform_sprite_frame_rect', $Graphics_uniform_sprite_frame_rect$7 = function $$uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index, layout) {
-        var $a, $b, self = this, fi = nil, lay = nil, $ret_or_1 = nil, nc = nil, nr = nil, $ret_or_2 = nil, col = nil, row = nil, c_st = nil, c_sz = nil, r_st = nil, r_sz = nil;
+      }, $Graphics_cell_axis_starts_and_sizes$4.$$arity = -3);
+      Opal.defs(self, '$uniform_sprite_frame_rect', $Graphics_uniform_sprite_frame_rect$7 = function $$uniform_sprite_frame_rect(img_w, img_h, cols, rows, frame_index, layout, remainder_to_end) {
+        var $a, $b, self = this, fi = nil, lay = nil, $ret_or_2 = nil, nc = nil, nr = nil, re = nil, $ret_or_3 = nil, col = nil, row = nil, c_st = nil, c_sz = nil, r_st = nil, r_sz = nil;
 
         
         
         if (layout == null) {
           layout = "row";
         };
+        
+        if (remainder_to_end == null) {
+          remainder_to_end = false;
+        };
         fi = frame_index.$to_i();
-        lay = (function() {if ($truthy((function() {if ($truthy(($ret_or_1 = layout['$=='](nil)))) {
-          return $ret_or_1
+        lay = (function() {if ($truthy((function() {if ($truthy(($ret_or_2 = layout['$=='](nil)))) {
+          return $ret_or_2
         } else {
           return layout.$to_s()['$==']("")
         }; return nil; })())) {
@@ -25614,8 +25638,9 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
         }; return nil; })();
         nc = [cols, 1].$max();
         nr = [rows, 1].$max();
-        if ($truthy((function() {if ($truthy(($ret_or_2 = lay['$==']("column")))) {
-          return $ret_or_2
+        re = remainder_to_end['$=='](true);
+        if ($truthy((function() {if ($truthy(($ret_or_3 = lay['$==']("column")))) {
+          return $ret_or_3
         } else {
           return lay['$==']("column_major")
         }; return nil; })())) {
@@ -25627,8 +25652,8 @@ Opal.modules["rubyfight/graphics"] = function(Opal) {
           col = fi['$%'](nc);
           row = $rb_divide(fi, nc);
         };
-        $b = self.$cell_axis_starts_and_sizes(img_w, nc), $a = Opal.to_ary($b), (c_st = ($a[0] == null ? nil : $a[0])), (c_sz = ($a[1] == null ? nil : $a[1])), $b;
-        $b = self.$cell_axis_starts_and_sizes(img_h, nr), $a = Opal.to_ary($b), (r_st = ($a[0] == null ? nil : $a[0])), (r_sz = ($a[1] == null ? nil : $a[1])), $b;
+        $b = self.$cell_axis_starts_and_sizes(img_w, nc, re), $a = Opal.to_ary($b), (c_st = ($a[0] == null ? nil : $a[0])), (c_sz = ($a[1] == null ? nil : $a[1])), $b;
+        $b = self.$cell_axis_starts_and_sizes(img_h, nr, re), $a = Opal.to_ary($b), (r_st = ($a[0] == null ? nil : $a[0])), (r_sz = ($a[1] == null ? nil : $a[1])), $b;
         return [c_st['$[]'](col), r_st['$[]'](row), c_sz['$[]'](col), r_sz['$[]'](row)];
       }, $Graphics_uniform_sprite_frame_rect$7.$$arity = -6);
       Opal.defs(self, '$title_char_frame_index', $Graphics_title_char_frame_index$8 = function $$title_char_frame_index(now_ms, fps, frame_start, frame_count, cols, rows) {
@@ -26025,7 +26050,7 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
       Opal.defs(self, '$to_browser_hash', $UiLayout_to_browser_hash$1 = function $$to_browser_hash() {
         var self = this;
 
-        return $hash2(["title"], {"title": $hash2(["logoCenterX", "juggingY", "mainTitleY", "subRubykaigiY", "subTerritoryY", "menu", "mascotLeft", "mascotRight", "mascotPixel", "footerControlsY", "footerFullscreenY", "parts"], {"logoCenterX": 480, "juggingY": 44, "mainTitleY": 126, "subRubykaigiY": 192, "subTerritoryY": 216, "menu": $hash2(["y"], {"y": 292}), "mascotLeft": $hash2(["x", "y"], {"x": 280, "y": 404}), "mascotRight": $hash2(["x", "y"], {"x": 680, "y": 404}), "mascotPixel": 3, "footerControlsY": 458, "footerFullscreenY": 478, "parts": $hash2(["background", "logo", "charLeft", "charRight"], {"background": $hash2(["x", "y", "w", "h", "fit"], {"x": 0, "y": 0, "w": 960, "h": 540, "fit": "cover"}), "logo": $hash2(["x", "y", "w", "h", "fit"], {"x": 136, "y": 32, "w": 688, "h": 252, "fit": "contain"}), "charLeft": $hash2(["x", "y", "w", "h", "fit"], {"x": 216, "y": 288, "w": 128, "h": 166, "fit": "contain"}), "charRight": $hash2(["x", "y", "w", "h", "fit"], {"x": 616, "y": 288, "w": 128, "h": 166, "fit": "contain"})})})})
+        return $hash2(["title"], {"title": $hash2(["logoCenterX", "juggingY", "mainTitleY", "subRubykaigiY", "subTerritoryY", "menu", "mascotLeft", "mascotRight", "mascotPixel", "footerControlsY", "footerFullscreenY", "parts"], {"logoCenterX": 480, "juggingY": 44, "mainTitleY": 126, "subRubykaigiY": 192, "subTerritoryY": 216, "menu": $hash2(["y"], {"y": 292}), "mascotLeft": $hash2(["x", "y"], {"x": 280, "y": 404}), "mascotRight": $hash2(["x", "y"], {"x": 680, "y": 404}), "mascotPixel": 3, "footerControlsY": 458, "footerFullscreenY": 478, "parts": $hash2(["background", "logo", "charLeft", "charRight"], {"background": $hash2(["x", "y", "w", "h", "fit"], {"x": 0, "y": 0, "w": 960, "h": 540, "fit": "cover"}), "logo": $hash2(["x", "y", "w", "h", "fit"], {"x": 136, "y": 32, "w": 688, "h": 252, "fit": "contain"}), "charLeft": $hash2(["x", "y", "w", "h", "fit"], {"x": 216, "y": 288, "w": 128, "h": 166, "fit": "contain"}), "charRight": $hash2(["x", "y", "w", "h", "fit"], {"x": 622, "y": 288, "w": 128, "h": 166, "fit": "contain"})})})})
       }, $UiLayout_to_browser_hash$1.$$arity = 0)
     })($nesting[0], $nesting)
   })($nesting[0], $nesting)
@@ -26181,9 +26206,10 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
         var N = window.RUBYFIGHT.__rbNum;
         return [N(c[0]), N(c[1])];
       };
-      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi, frameLayout) {
+      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi, frameLayout, remainderToEnd) {
         var fl = (frameLayout == null || frameLayout === undefined || frameLayout === '') ? 'row' : ('' + frameLayout);
-        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi, fl);
+        var re = remainderToEnd === true;
+        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi, fl, re);
         var N = window.RUBYFIGHT.__rbNum;
         return [N(r[0]), N(r[1]), N(r[2]), N(r[3])];
       };

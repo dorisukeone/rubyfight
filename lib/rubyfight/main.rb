@@ -130,9 +130,10 @@ module Rubyfight
         var N = window.RUBYFIGHT.__rbNum;
         return [N(c[0]), N(c[1])];
       };
-      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi, frameLayout) {
+      window.RUBYFIGHT.gfxUniformSpriteFrameRect = function(iw, ih, cols, rows, fi, frameLayout, remainderToEnd) {
         var fl = (frameLayout == null || frameLayout === undefined || frameLayout === '') ? 'row' : ('' + frameLayout);
-        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi, fl);
+        var re = remainderToEnd === true;
+        var r = _gfx['$uniform_sprite_frame_rect'](iw, ih, cols, rows, fi, fl, re);
         var N = window.RUBYFIGHT.__rbNum;
         return [N(r[0]), N(r[1]), N(r[2]), N(r[3])];
       };

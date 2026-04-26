@@ -85,19 +85,22 @@ module Rubyfight
           'matteColorMin' => 34
         },
         'TITLE_CHAR_BLUE_SHEET' => {
-          'url' => 'assets/title/char_blue_sheet.png',
-          # 待機右: 1x4 横並び・アイドル
-          'cols' => 4,
+          'url' => 'assets/title/char_blue_sheet.png?v=40',
+          'cols' => 24,
           'rows' => 1,
           'frameLayout' => 'row',
-          'fps' => 6,
+          'fps' => 24,
           'frameStart' => 0,
-          'frameCount' => 4,
+          'frameCount' => 24,
+          'fit' => 'contain',
+          'clip' => false,
+          'sheetVAlign' => 'center',
+          'sheetSourceUniformMax' => false,
+          'atlasSourceExact' => false,
+          'sheetSourceTrimEndX' => 4,
+          'keyByMaxChannel' => 32,
           'removeEdgeBlack' => false,
-          'removeMatte' => true,
-          'matteDarkMax' => 40,
-          'matteColorMin' => 34,
-          'keyMaxRgb' => 32
+          'removeMatte' => false
         },
         'TITLE_BACKGROUND_URL' => 'assets/title/title_background.png',
         'ASSET_SHEET' => {
