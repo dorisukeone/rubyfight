@@ -11,17 +11,17 @@ module Rubyfight
           'subTerritoryY' => 216,
           # サブタイトル〜メニュー〜キャラの縦バランス（2 項目メニュー想定）
           'menu' => { 'y' => 292 },
-          'mascotLeft' => { 'x' => 124, 'y' => 306 },
-          'mascotRight' => { 'x' => 836, 'y' => 306 },
+          # メニュー文案（中央）の左右の空きに寄せる。480 対称: 左枠 216+128=344、右 616〜744
+          'mascotLeft' => { 'x' => 280, 'y' => 404 },
+          'mascotRight' => { 'x' => 680, 'y' => 404 },
           'mascotPixel' => 3,
           'footerControlsY' => 458,
           'footerFullscreenY' => 478,
           'parts' => {
             'background' => { 'x' => 0, 'y' => 0, 'w' => 960, 'h' => 540, 'fit' => 'cover' },
             'logo' => { 'x' => 136, 'y' => 32, 'w' => 688, 'h' => 252, 'fit' => 'contain' },
-            # 左右同じ y/h で足元一致。w 同幅・画面中心対称。枠内は下辺=足元・水平中心（vAlign: bottom）
-            'charLeft' => { 'x' => 70, 'y' => 230, 'w' => 208, 'h' => 224, 'fit' => 'contain', 'vAlign' => 'bottom' },
-            'charRight' => { 'x' => 682, 'y' => 230, 'w' => 208, 'h' => 224, 'fit' => 'contain', 'vAlign' => 'bottom' }
+            'charLeft' => { 'x' => 216, 'y' => 288, 'w' => 128, 'h' => 166, 'fit' => 'contain' },
+            'charRight' => { 'x' => 616, 'y' => 288, 'w' => 128, 'h' => 166, 'fit' => 'contain' }
           }
         }
       }

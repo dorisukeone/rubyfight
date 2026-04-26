@@ -29,8 +29,9 @@
       font-family: 'Press Start 2P', monospace;
     }
     canvas {
-      /* 16:9 を保ちつつビューポートに最大表示（内部解像度は 960×540 のまま） */
+      /* 16:9 を保ちつつビューポートに最大表示。論理座標 960×540 は JS で devicePixelRatio 倍のバッファに描く */
       image-rendering: pixelated;
+      image-rendering: crisp-edges;
       width: min(100vw, calc(100vh * 16 / 9));
       height: min(100vh, calc(100vw * 9 / 16));
       box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
@@ -101,7 +102,8 @@
       RUSH_TIME: 15,         
 
       PLAY_P1_SHEET: {
-        url: 'assets/play/p1_walk.png',
+        urlLeft: 'assets/play/p1_walk_left.png',
+        urlRight: 'assets/play/p1_walk_right.png',
         cols: 4,
         rows: 1,
         frameLayout: 'row',
@@ -133,20 +135,26 @@
       LOGO_REMOVE_EDGE_BLACK: true,
       LOGO_KEY_MAX_RGB: 32,
 
-      // タイトル左・赤: 1x4 アイドル（横シート）
       TITLE_CHAR_RED_SHEET: {
-        url: 'assets/title/char_red_sheet.png',
-        cols: 4,
+        url: 'assets/title/char_red_sheet.png?v=17',
+        // 24 列: 1368×80 = 24×57（等分割＋ useFixedFrames 用に pad 済み asset）
+        cols: 24,
         rows: 1,
+        frameWidth: 57,
+        frameHeight: 80,
         frameLayout: 'row',
-        fps: 6,
+        fps: 24,
         frameStart: 0,
-        frameCount: 4,
+        frameCount: 24,
+        fit: 'contain',
+        clip: false,
+        sheetVAlign: 'bottom',
+        // 帯地が（近）黒赤で a=255 のベタ地のため max(r,g,b) しきいで抜く（右3px透過列とは別）
+        keyByMaxChannel: 24,
         removeEdgeBlack: false,
-        removeMatte: true,
+        removeMatte: false,
         matteDarkMax: 40,
-        matteColorMin: 45,
-        keyMaxRgb: 32
+        matteColorMin: 34
       },
 
       // タイトル右・青: 1x4 アイドル（横シート）
@@ -161,7 +169,7 @@
         removeEdgeBlack: false,
         removeMatte: true,
         matteDarkMax: 40,
-        matteColorMin: 45,
+        matteColorMin: 34,
         keyMaxRgb: 32
       },
 
@@ -223,16 +231,17 @@
         subRubykaigiY: 192,
         subTerritoryY: 216,
         menu: { y: 292 },
-        mascotLeft: { x: 124, y: 306 },
-        mascotRight: { x: 836, y: 306 },
+        // メニュー文案の左右の空き（中央 480 対称）。mascot* は drawPixelSprite の中心
+        mascotLeft: { x: 280, y: 404 },
+        mascotRight: { x: 680, y: 404 },
         mascotPixel: 3,
         footerControlsY: 458,
         footerFullscreenY: 478,
         parts: {
           background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
           logo: { x: 136, y: 32, w: 688, h: 252, fit: 'contain' },
-          charLeft: { x: 70, y: 230, w: 208, h: 224, fit: 'contain', vAlign: 'bottom' },
-          charRight: { x: 682, y: 230, w: 208, h: 224, fit: 'contain', vAlign: 'bottom' }
+          charLeft: { x: 216, y: 288, w: 128, h: 166, fit: 'contain' },
+          charRight: { x: 616, y: 288, w: 128, h: 166, fit: 'contain' }
         }
       }
     };
@@ -271,14 +280,41 @@
     canvas.addEventListener('mousedown', function () { canvas.focus({ preventScroll: true }); });
     canvas.addEventListener('touchstart', function () { canvas.focus({ preventScroll: true }); }, { passive: true });
     const ctx = canvas.getContext('2d');
-    ctx.imageSmoothingEnabled = false;
-    if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'low';
+    let _rbCanvasBackingDpr = 0;
+    /** Retina 等で CSS 拡大後ににじまないよう、バッファを論理サイズ×DPR に合わせる（論理座標は常に CONFIG と同一） */
+    function syncGameCanvasBackingStore() {
+      const lw = CONFIG.WIDTH;
+      const lh = CONFIG.HEIGHT;
+      const dpr = Math.min(window.devicePixelRatio || 1, 3);
+      const bw = Math.max(1, Math.round(lw * dpr));
+      const bh = Math.max(1, Math.round(lh * dpr));
+      if (_rbCanvasBackingDpr === dpr && canvas.width === bw && canvas.height === bh) return;
+      _rbCanvasBackingDpr = dpr;
+      canvas.width = bw;
+      canvas.height = bh;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'low';
+    }
+    syncGameCanvasBackingStore();
+    window.addEventListener('resize', function () {
+      syncGameCanvasBackingStore();
+    });
 
     /** 9 引数 drawImage。描画先・元矩形を Math.round してサブピクセル補間の「ぬるっと感」を防ぐ */
     function drawImage9Int(img, sx, sy, sw, sh, dx, dy, dw, dh) {
       ctx.drawImage(
         img,
         Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh),
+        Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh)
+      );
+    }
+
+    /** スプライトアトラス用：元矩形はそのまま、先だけ整数化（隣コマの色がにじむのを抑える） */
+    function drawImage9SpriteAtlas(img, sx, sy, sw, sh, dx, dy, dw, dh) {
+      ctx.drawImage(
+        img,
+        sx, sy, sw, sh,
         Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh)
       );
     }
@@ -330,8 +366,10 @@
     let titleBackgroundImg = null;
     let titleCharRedSheetImg = null;
     let titleCharBlueSheetImg = null;
-    let playP1SheetImg = null;
+    let playP1SheetImgLeft = null;
+    let playP1SheetImgRight = null;
     let playP2SheetImg = null;
+    let p1FacingRight = true;
     let p1WalkAccum = 0;
     let p2WalkAccum = 0;
     let p1WalkFrame = 0;
@@ -765,6 +803,34 @@
       return canvas;
     }
 
+    /**
+     * 各ピクセルで max(r,g,b) <= m なら α=0。ベタの暗色地（a=255）が多いスプライト帯用。
+     * removeEdgeBlack は辺に繋がらない地が残るが、本処理は 1 フレーム内の穴も抜く。
+     */
+    function keyDarkByMaxChannel(img, maxM) {
+      const m = Number(maxM);
+      if (!isFinite(m) || m < 0) return img;
+      const { w, h } = drawableSize(img);
+      if (!w || !h) return img;
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const c2d = canvas.getContext('2d');
+      c2d.imageSmoothingEnabled = false;
+      c2d.drawImage(img, 0, 0);
+      const imageData = c2d.getImageData(0, 0, w, h);
+      const d = imageData.data;
+      const len = w * h;
+      for (let p = 0; p < len; p++) {
+        const i = p * 4;
+        if (d[i + 3] === 0) continue;
+        const M = Math.max(d[i], d[i + 1], d[i + 2]);
+        if (M <= m) d[i + 3] = 0;
+      }
+      c2d.putImageData(imageData, 0, 0);
+      return canvas;
+    }
+
     /** file:// では crossOrigin 付きが失敗することがあるため付けない（同一オリジンの PNG のみ） */
     function loadImageSrc(src) {
       return new Promise((resolve) => {
@@ -785,8 +851,9 @@
 
     // Canvas 描画用の幾何は常に下記 JS のみ（Opal 橋の Float 微差でサブピクセルに寄り「スライド」するのを防ぐ。Ruby の定義は MRI テスト用）
     function clampSheetSource(img, sx, sy, sw, sh) {
-      const iw = img.naturalWidth;
-      const ih = img.naturalHeight;
+      const ds = drawableSize(img);
+      const iw = ds.w;
+      const ih = ds.h;
       let x = sx;
       let y = sy;
       let w = sw;
@@ -847,7 +914,10 @@
 
     function drawSpriteFrameInRect(img, sx, sy, sw, sh, rect) {
       if (!img || sw <= 0 || sh <= 0) return;
-      const { x, y, w, h } = rect;
+      const { x, y } = rect;
+      const w = Number(rect.w);
+      const h = Number(rect.h);
+      if (!isFinite(w) || !isFinite(h) || w < 8 || h < 8) return;
       const fit = rect.fit || 'contain';
       const vAlign = rect.vAlign || 'center';
       const fstr = String(fit || 'contain');
@@ -859,18 +929,43 @@
       } else {
         scale = fstr === 'cover' ? Math.max(w / sw, h / sh) : Math.min(w / sw, h / sh);
       }
-      const dw = sw * scale;
-      const dh = sh * scale;
-      const dx = x + (w - dw) / 2;
+      let scaleMul = Number(rect.scaleMul);
+      if (!isFinite(scaleMul) || scaleMul <= 0) scaleMul = 1;
+      scale *= scaleMul;
+      // uniformSourceCell 時は描画先 dw/dh を u.w/u.h 基準に固定（1024%9 などで sw がコマごとに 1px 違うと dx が揺れて横スライドする）
+      let dw; let dh;
+      if (u && isFinite(u.w) && isFinite(u.h) && u.w > 0 && u.h > 0) {
+        dw = u.w * scale;
+        dh = u.h * scale;
+      } else {
+        dw = sw * scale;
+        dh = sh * scale;
+      }
+      // 先に描画サイズを整数化してから位置を決める（浮動 dw と Math.round(dx) の組み合わせでフレーム間 1px 横揺れしやすい）
+      const dwi = Math.max(1, Math.round(dw));
+      const dhi = Math.max(1, Math.round(dh));
+      const dx = Math.round(x + (w - dwi) / 2);
       let dy;
       if (vAlign === 'bottom') {
-        dy = y + h - dh;
+        dy = Math.round(y + h - dhi);
       } else if (vAlign === 'top') {
-        dy = y;
+        dy = Math.round(y);
       } else {
-        dy = y + (h - dh) / 2;
+        dy = Math.round(y + (h - dhi) / 2);
       }
-      drawImage9Int(img, sx, sy, sw, sh, dx, dy, dw, dh);
+      const doClip = rect.clip && fstr === 'cover';
+      if (doClip) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x, y, w, h);
+        ctx.clip();
+      }
+      if (rect.atlasSourceExact) {
+        drawImage9SpriteAtlas(img, sx, sy, sw, sh, dx, dy, dwi, dhi);
+      } else {
+        drawImage9Int(img, sx, sy, sw, sh, dx, dy, dwi, dhi);
+      }
+      if (doClip) ctx.restore();
     }
 
     function drawTitleCharSpriteSheet(img, S, rect) {
@@ -879,17 +974,36 @@
       if (!w || !h) return;
       const cols = Math.max(1, Math.floor(Number(S.cols)) || 4);
       const rows = Math.max(1, Math.floor(Number(S.rows)) || 4);
+      const fw = Number(S.frameWidth);
+      const fh = Number(S.frameHeight);
+      const needW = isFinite(fw) && fw > 0 ? fw * cols : 0;
+      const needH = isFinite(fh) && fh > 0 ? fh * rows : 0;
+      const useFixedFrames =
+        needW > 0 &&
+        needH > 0 &&
+        w + 2 >= needW &&
+        h + 2 >= needH;
       if (!img._rbTitleCharGridCheck) {
         img._rbTitleCharGridCheck = true;
-        const rw = w % cols;
-        const rh = h % rows;
-        // 余り 1〜2px は先頭列・行に寄せる実装（getUniformSpriteFrameRect）で吸収。大きいズレだけ警告
-        if (rw > 2 || rh > 2) {
+        if (needW > 0 && needH > 0 && !useFixedFrames) {
           console.warn(
-            '[RUBYFIGHT] タイトル用スプライトシートのピクセル幅・高さが cols/rows に対して大きく割り切れません。切り出し枠のズレで揺れます。',
-            { width: w, height: h, cols, rows, widthRemainder: rw, heightRemainder: rh },
-            '例: 4x4 なら幅・高さを 4 の倍数に揃えるか、cols/rows を実寸に合わせてください。'
+            '[RUBYFIGHT] タイトル赤シート: 画像が frameWidth×cols（' +
+              needW +
+              '×' +
+              needH +
+              '）未満のため等分割で切り出しています。右や下が欠ける場合は 648×929×24 列のシートに差し替えてください。',
+            { width: w, height: h, cols, rows, frameWidth: fw, frameHeight: fh }
           );
+        } else if (!useFixedFrames) {
+          const rw = w % cols;
+          const rh = h % rows;
+          if (rw > 2 || rh > 2) {
+            console.warn(
+              '[RUBYFIGHT] タイトル用スプライトシートのピクセル幅・高さが cols/rows に対して大きく割り切れません。切り出し枠のズレで揺れます。',
+              { width: w, height: h, cols, rows, widthRemainder: rw, heightRemainder: rh },
+              '例: 4x4 なら幅・高さを 4 の倍数に揃えるか、cols/rows を実寸に合わせてください。'
+            );
+          }
         }
       }
       const total = cols * rows;
@@ -900,11 +1014,59 @@
       let f = Math.min(start + (tick % Math.max(1, count)), total - 1);
       f = Math.max(0, Math.floor(Number(f)) || 0);
       const frameLayout = (S.frameLayout != null && S.frameLayout !== '') ? S.frameLayout : 'row';
-      const { sx, sy, sw, sh } = getUniformSpriteFrameRect(w, h, cols, rows, f, frameLayout);
-      // 枠内は水平中心・下辺＝足元。uniformSourceCell でシート 1 マス分の拡大率に固定しコマ切り替えのズレを抑える
-      const uW = w / cols;
-      const uH = h / rows;
-      const r = { ...rect, vAlign: 'bottom', fit: rect.fit != null ? rect.fit : 'contain', uniformSourceCell: { w: uW, h: uH } };
+      let sx; let sy; let sw; let sh; let uW; let uH;
+      if (useFixedFrames) {
+        let col; let row;
+        if (frameLayout === 'column' || frameLayout === 'column_major') {
+          col = Math.floor(f / rows);
+          row = f % rows;
+        } else {
+          col = f % cols;
+          row = Math.floor(f / cols);
+        }
+        sx = col * fw;
+        sy = row * fh;
+        sw = fw;
+        sh = fh;
+        uW = fw;
+        uH = fh;
+      } else {
+        const r0 = getUniformSpriteFrameRect(w, h, cols, rows, f, frameLayout);
+        sx = r0.sx;
+        sy = r0.sy;
+        sw = r0.sw;
+        sh = r0.sh;
+        const colAxis = cellAxisStartsAndSizes(w, cols);
+        const rowAxis = cellAxisStartsAndSizes(h, rows);
+        uW = Math.max.apply(null, colAxis.sizes);
+        uH = Math.max.apply(null, rowAxis.sizes);
+      }
+      const inset = Math.max(0, Math.floor(Number(S.sheetSourceInset != null ? S.sheetSourceInset : 0)));
+      if (inset > 0 && sw > inset * 2 && sh > inset * 2) {
+        sx += inset;
+        sy += inset;
+        sw -= inset * 2;
+        sh -= inset * 2;
+        uW = Math.max(1, uW - inset * 2);
+        uH = Math.max(1, uH - inset * 2);
+      }
+      const clipped = clampSheetSource(img, sx, sy, sw, sh);
+      sx = clipped.sx;
+      sy = clipped.sy;
+      sw = clipped.sw;
+      sh = clipped.sh;
+      const sm = S.scaleMul != null ? Number(S.scaleMul) : null;
+      const atlasExact = S.atlasSourceExact === true;
+      const r = {
+        ...rect,
+        vAlign: S.sheetVAlign != null && S.sheetVAlign !== '' ? S.sheetVAlign : 'bottom',
+        // パーツの rect.fit（contain）よりシートの S.fit を優先。赤 24 コマは contain だと高さ基準で幅が数十 px になり「細い1本」になる
+        fit: S.fit != null && S.fit !== '' ? S.fit : (rect.fit != null ? rect.fit : 'contain'),
+        clip: S.clip === true || rect.clip === true,
+        scaleMul: isFinite(sm) && sm > 0 ? sm : undefined,
+        uniformSourceCell: { w: uW, h: uH },
+        atlasSourceExact: atlasExact
+      };
       drawSpriteFrameInRect(img, sx, sy, sw, sh, r);
     }
 
@@ -1070,12 +1232,18 @@
         pending++;
         loadImageSrc(CONFIG.TITLE_CHAR_RED_SHEET.url).then((img) => {
           const S = CONFIG.TITLE_CHAR_RED_SHEET;
-          if (img && S.removeEdgeBlack !== false) {
+          let out = img;
+          if (img && S.removeMatte) {
+            const dm = S.matteDarkMax != null ? S.matteDarkMax : 40;
+            const cm = S.matteColorMin != null ? S.matteColorMin : 45;
+            out = removeBorderConnectedDarkMatte(img, dm, cm);
+          } else if (img && S.removeEdgeBlack) {
             const km = S.keyMaxRgb != null ? S.keyMaxRgb : CONFIG.LOGO_KEY_MAX_RGB;
-            titleCharRedSheetImg = removeEdgeConnectedNearBlack(img, km);
-          } else {
-            titleCharRedSheetImg = img;
+            out = removeEdgeConnectedNearBlack(img, km);
+          } else if (img && S.keyByMaxChannel != null && isFinite(Number(S.keyByMaxChannel))) {
+            out = keyDarkByMaxChannel(img, Number(S.keyByMaxChannel));
           }
+          titleCharRedSheetImg = out;
           done();
         });
       }
@@ -1096,17 +1264,38 @@
           done();
         });
       }
-      if (CONFIG.PLAY_P1_SHEET && CONFIG.PLAY_P1_SHEET.url) {
+      if (CONFIG.PLAY_P1_SHEET && CONFIG.PLAY_P1_SHEET.urlLeft && CONFIG.PLAY_P1_SHEET.urlRight) {
+        const loadP1Sheet = (url, assign) => {
+          pending++;
+          loadImageSrc(url).then((img) => {
+            const S = CONFIG.PLAY_P1_SHEET;
+            if (img && S.removeMatte) {
+              const dm = S.matteDarkMax != null ? S.matteDarkMax : 40;
+              const cm = S.matteColorMin != null ? S.matteColorMin : 45;
+              assign(removeBorderConnectedDarkMatte(img, dm, cm));
+            } else {
+              assign(img);
+            }
+            done();
+          });
+        };
+        loadP1Sheet(CONFIG.PLAY_P1_SHEET.urlLeft, (im) => { playP1SheetImgLeft = im; });
+        loadP1Sheet(CONFIG.PLAY_P1_SHEET.urlRight, (im) => { playP1SheetImgRight = im; });
+      } else if (CONFIG.PLAY_P1_SHEET && CONFIG.PLAY_P1_SHEET.url) {
         pending++;
         loadImageSrc(CONFIG.PLAY_P1_SHEET.url).then((img) => {
           const S = CONFIG.PLAY_P1_SHEET;
-          if (img && S.removeMatte) {
+          let out = img;
+          if (img && S.removeEdgeBlack) {
+            const km = S.keyMaxRgb != null ? S.keyMaxRgb : CONFIG.LOGO_KEY_MAX_RGB;
+            out = removeEdgeConnectedNearBlack(img, km);
+          } else if (img && S.removeMatte) {
             const dm = S.matteDarkMax != null ? S.matteDarkMax : 40;
             const cm = S.matteColorMin != null ? S.matteColorMin : 45;
-            playP1SheetImg = removeBorderConnectedDarkMatte(img, dm, cm);
-          } else {
-            playP1SheetImg = img;
+            out = removeBorderConnectedDarkMatte(img, dm, cm);
           }
+          playP1SheetImgLeft = out;
+          playP1SheetImgRight = out;
           done();
         });
       }
@@ -1584,6 +1773,7 @@
       p2WalkAccum = 0;
       p1WalkFrame = 0;
       p2WalkFrame = 0;
+      p1FacingRight = true;
       p1LastPos = { x: p1.x, y: p1.y };
       p2LastPos = { x: p2.x, y: p2.y };
 
@@ -2080,6 +2270,10 @@
         const v1y = p1d.y - p1LastPos.y;
         if (v1x * v1x + v1y * v1y > 0.15) {
           p1WalkAccum += dt * rate1;
+          if (Math.abs(v1x) > Math.abs(v1y) * 0.45) {
+            if (v1x > 0) p1FacingRight = true;
+            else if (v1x < 0) p1FacingRight = false;
+          }
         } else {
           p1WalkAccum = 0;
         }
@@ -2531,8 +2725,12 @@
 
     function drawPlayer(p, color, isP2, walkFrame) {
       const wf = walkFrame != null ? walkFrame : 0;
-      if (!isP2 && playP1SheetImg && CONFIG.PLAY_P1_SHEET && CONFIG.PLAY_P1_SHEET.url) {
-        drawPlayPlayerSheet(p, playP1SheetImg, CONFIG.PLAY_P1_SHEET, false, wf);
+      const S1 = CONFIG.PLAY_P1_SHEET;
+      const p1SheetsReady = S1 && playP1SheetImgLeft && playP1SheetImgRight &&
+        (S1.urlLeft && S1.urlRight || S1.url);
+      if (!isP2 && p1SheetsReady) {
+        const img = p1FacingRight ? playP1SheetImgRight : playP1SheetImgLeft;
+        drawPlayPlayerSheet(p, img, S1, false, wf);
         return;
       }
       if (isP2 && playP2SheetImg && CONFIG.PLAY_P2_SHEET && CONFIG.PLAY_P2_SHEET.url) {

@@ -11,3 +11,8 @@ gem 'rake', '~> 13.0'
 group :test do
   gem 'minitest', '~> 5.25'
 end
+
+group :development do
+  # タイトル用スプライトシートのオフライン処理（process_to_grid_frames）
+  gem 'chunky_png', '~> 1.4'
+end

@@ -34,9 +34,10 @@ module Rubyfight
         },
         'GAME_TIME' => 55,
         'RUSH_TIME' => 15,
-        # プレイ中の歩行スプライト（1x4 横シート）。P2 は白ベタ背景を周縁キーで透過
+        # プレイ中の歩行（左・右で別シート、各 1x4）
         'PLAY_P1_SHEET' => {
-          'url' => 'assets/play/p1_walk.png',
+          'urlLeft' => 'assets/play/p1_walk_left.png',
+          'urlRight' => 'assets/play/p1_walk_right.png',
           'cols' => 4,
           'rows' => 1,
           'frameLayout' => 'row',
@@ -63,19 +64,25 @@ module Rubyfight
         'LOGO_REMOVE_EDGE_BLACK' => true,
         'LOGO_KEY_MAX_RGB' => 32,
         'TITLE_CHAR_RED_SHEET' => {
-          'url' => 'assets/title/char_red_sheet.png',
-          # 待機左: 1x4 横並び・アイドル
-          'cols' => 4,
+          'url' => 'assets/title/char_red_sheet.png?v=17',
+          # 実寸 1368×80 = 24×57（元 1365 に右 3px: script/pad_char_red_sheet_to_24_cols.rb）
+          'cols' => 24,
           'rows' => 1,
+          'frameWidth' => 57,
+          'frameHeight' => 80,
           'frameLayout' => 'row',
-          'fps' => 6,
+          'fps' => 24,
           'frameStart' => 0,
-          'frameCount' => 4,
+          'frameCount' => 24,
+          'fit' => 'contain',
+          'clip' => false,
+          'sheetVAlign' => 'bottom',
+          # 帯地が近黒（a=255）のベタ地のため max(r,g,b) で一括キー。輪郭が欠ける時は 22〜32 で調整
+          'keyByMaxChannel' => 24,
           'removeEdgeBlack' => false,
-          'removeMatte' => true,
+          'removeMatte' => false,
           'matteDarkMax' => 40,
-          'matteColorMin' => 45,
-          'keyMaxRgb' => 32
+          'matteColorMin' => 34
         },
         'TITLE_CHAR_BLUE_SHEET' => {
           'url' => 'assets/title/char_blue_sheet.png',
@@ -89,7 +96,7 @@ module Rubyfight
           'removeEdgeBlack' => false,
           'removeMatte' => true,
           'matteDarkMax' => 40,
-          'matteColorMin' => 45,
+          'matteColorMin' => 34,
           'keyMaxRgb' => 32
         },
         'TITLE_BACKGROUND_URL' => 'assets/title/title_background.png',
