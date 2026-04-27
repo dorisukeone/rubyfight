@@ -2,6 +2,17 @@
 # Opal / MRI 共通で require 可能（Opal 専用構文なし）
 module Rubyfight
   module GameConfig
+    # index.html verifyRubyCoreAligned（BEGIN/END RUBYFIGHT_VERIFY_PAGE_CONFIG_KEYS 内）と同期すること
+    VERIFY_PAGE_CONFIG_KEYS = %w[
+      WIDTH HEIGHT TILE_SIZE GRID_COLS GRID_ROWS GAME_TIME RUSH_TIME
+      PREPLAY_COUNTDOWN_SEC
+      TITLE_BACKGROUND_URL TITLE_SCREEN_BACKGROUND_URL PLAY_SCREEN_BACKGROUND_URL
+      LOGO_KEY_MAX_RGB LOGO_KEY_BY_MAX_CHANNEL
+    ].freeze
+
+    # 無くても起動できるフォールバック用（hosting:verify の必須ファイルから除外）
+    DEPLOY_OPTIONAL_ASSET_BASENAMES = %w[asset_sheet.png].freeze
+
     # JS の CONFIG と同じキー（大文字）で JSON 化しやすくする
     def self.to_browser_hash
       width = 960
@@ -106,7 +117,10 @@ module Rubyfight
           'removeEdgeBlack' => false,
           'removeMatte' => false
         },
+        # 全面背景: 未指定時は TITLE_BACKGROUND_URL にフォールバック
         'TITLE_BACKGROUND_URL' => 'assets/title/title_background.png',
+        'TITLE_SCREEN_BACKGROUND_URL' => 'assets/title/title_background.png?v=screen',
+        'PLAY_SCREEN_BACKGROUND_URL' => 'assets/title/title_background.png?v=play',
         'ASSET_SHEET' => {
           'url' => 'assets/title/asset_sheet.png',
           'sheetW' => 1024,
@@ -138,6 +152,47 @@ module Rubyfight
 
     def self.field_height
       to_browser_hash['FIELD_HEIGHT']
+    end
+
+    # ?query を除いた相対パス（repo ルート基準）。hosting:prepare の同期対象のうち必須のみ
+    def self.deploy_required_asset_paths_relative
+      h = to_browser_hash
+      out = []
+      add = lambda do |u|
+        next if u.nil?
+
+        # Ruby 3.2+ では "".split('?', 2).first が nil になり得るため partition を使う
+        raw = u.to_s
+        s = (raw.include?('?') ? raw.partition('?').first : raw).strip
+        next if s.empty?
+
+        bn = File.basename(s)
+        next if DEPLOY_OPTIONAL_ASSET_BASENAMES.include?(bn)
+
+        out << s
+      end
+
+      add.call(h['TITLE_BACKGROUND_URL'])
+      add.call(h['TITLE_SCREEN_BACKGROUND_URL'])
+      add.call(h['PLAY_SCREEN_BACKGROUND_URL'])
+
+      tp = h['TITLE_PARTS'] || {}
+      %w[background logo charLeft charRight].each { |k| add.call(tp[k]) }
+
+      p1 = h['PLAY_P1_SHEET']
+      if p1
+        add.call(p1['urlLeft'])
+        add.call(p1['urlRight'])
+        add.call(p1['url'])
+      end
+
+      p2 = h['PLAY_P2_SHEET']
+      add.call(p2['url']) if p2
+
+      add.call((h['TITLE_CHAR_RED_SHEET'] || {})['url'])
+      add.call((h['TITLE_CHAR_BLUE_SHEET'] || {})['url'])
+
+      out.uniq
     end
   end
 end

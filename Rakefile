@@ -2,6 +2,7 @@ require 'fileutils'
 require 'opal/builder'
 require 'opal/builder_processors'
 require 'rake/testtask'
+require_relative 'lib/rubyfight/game_config'
 
 directory 'build'
 
@@ -54,6 +55,52 @@ task 'assets:grid_title_char' do
   ch = strip.height
   puts "Wrote #{out} (#{strip.width}x#{strip.height}) cell=#{cw}x#{ch}"
   puts "Set TITLE_CHAR_RED_SHEET frameWidth: #{cw}, frameHeight: #{ch} for fixed grid."
+end
+
+desc 'Firebase Hosting 用: public/ に index.html・build/rubyfight.js・assets/ のみコピー'
+task 'hosting:prepare' do
+  root = __dir__
+  pub = File.join(root, 'public')
+  src_assets = File.join(root, 'assets')
+  src_js = File.join(root, 'build', 'rubyfight.js')
+  src_html = File.join(root, 'index.html')
+
+  raise "missing #{src_html}" unless File.file?(src_html)
+  raise "missing #{src_js} (run rake opal:build)" unless File.file?(src_js)
+  raise "missing #{src_assets}" unless File.directory?(src_assets)
+
+  FileUtils.rm_rf(pub)
+  FileUtils.mkdir_p(File.join(pub, 'build'))
+  FileUtils.cp(src_html, File.join(pub, 'index.html'))
+  FileUtils.cp(src_js, File.join(pub, 'build', 'rubyfight.js'))
+  FileUtils.cp_r(src_assets, File.join(pub, 'assets'))
+  Dir.glob(File.join(pub, '**', '.DS_Store'), File::FNM_DOTMATCH).each { |f| FileUtils.rm_f(f) }
+  puts "Wrote #{pub}/"
+end
+
+desc 'public/ に必須ファイル・GameConfig 由来のアセットが揃っているか検証（hosting:prepare 後）'
+task 'hosting:verify' => ['hosting:prepare'] do
+  pub = File.join(__dir__, 'public')
+  index_p = File.join(pub, 'index.html')
+  js_p = File.join(pub, 'build', 'rubyfight.js')
+
+  raise "missing #{index_p}" unless File.file?(index_p)
+  raise "missing #{js_p}" unless File.file?(js_p)
+
+  js_size = File.size(js_p)
+  raise "#{js_p} too small (#{js_size} bytes); run opal:build" if js_size < 10_000
+
+  Rubyfight::GameConfig.deploy_required_asset_paths_relative.each do |rel|
+    full = File.join(pub, rel)
+    raise "deploy asset missing: #{rel} (expected at #{full})" unless File.file?(full)
+  end
+
+  puts 'hosting:verify OK (index, rubyfight.js, assets from GameConfig)'
+end
+
+desc 'テスト → ビルド → public 同期・検証 → firebase deploy --only hosting'
+task 'hosting:deploy' => %w[test opal:build hosting:verify] do
+  sh 'firebase deploy --only hosting'
 end
 
 task default: %i[test opal:build]

@@ -88,11 +88,13 @@ bundle exec rake
 プロジェクト例は `.firebaserc` を参照してください。
 
 ```bash
-# 必ず最新の rubyfight.js をコミット／配置してから
-firebase deploy
+# Minitest → Opal ビルド → public/ に配布物のみコピー → 必須ファイル検証 → デプロイ
+bundle exec rake hosting:deploy
 ```
 
-`firebase.json` ではリポジトリルートを `public` にしています。
+`firebase.json` の `public` は **`public/` ディレクトリ**（`rake hosting:prepare` が `index.html`・`build/rubyfight.js`・`assets/` だけを同期）。リポジトリの `lib/` や `test/` はホスティングに含まれません。
+
+**`firebase deploy` だけは実行しないでください。** 空または古い `public/` がそのまま配信されます。検証付きの `bundle exec rake hosting:deploy`、または最低でも `bundle exec rake hosting:verify` の後にデプロイしてください。
 
 ## トラブルシュート
 

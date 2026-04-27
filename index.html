@@ -180,8 +180,10 @@
         removeMatte: false
       },
 
-      // タイトル／プレイ共通の全面背景（空ならシートのパターン or procedural）
+      // 全面背景の既定（TITLE_SCREEN / PLAY_SCREEN が空のときのみ使用）
       TITLE_BACKGROUND_URL: 'assets/title/title_background.png',
+      TITLE_SCREEN_BACKGROUND_URL: 'assets/title/title_background.png?v=screen',
+      PLAY_SCREEN_BACKGROUND_URL: 'assets/title/title_background.png?v=play',
 
       // 分解シート 1枚（2×3 グリッド）— 1024×571 想定。gridRect は見出し・フッターを除いたセル領域
       ASSET_SHEET: {
@@ -329,7 +331,9 @@
     const FIELD_WIDTH = CONFIG.TILE_SIZE * CONFIG.GRID_COLS;   
     const FIELD_HEIGHT = CONFIG.TILE_SIZE * CONFIG.GRID_ROWS;  
     const OFFSET_X = (CONFIG.WIDTH - FIELD_WIDTH) / 2;         
-    const OFFSET_Y = 110; 
+    const OFFSET_Y = 110;
+    /** タイトルメニュー項目数（Ruby GameState.title_confirm_action と一致） */
+    const TITLE_MENU_ENTRY_COUNT = 2;
 
     let state = 'TITLE'; 
     let mode = 1;        
@@ -350,6 +354,9 @@
     /** 試合直前カウントダウン（state === 'COUNTDOWN'） */
     let countdownElapsed = 0;
     let countdownLastFloor = -1;
+
+    /** update/draw で未捕捉例外が出たらループを止めて表示 */
+    let fatalLoopError = null;
     
     let p1 = { x: 0, y: 0 };
     let p2 = { x: 0, y: 0 };
@@ -374,7 +381,8 @@
       charRight: null
     };
     let assetSheetImg = null;
-    let titleBackgroundImg = null;
+    let titleScreenBgImg = null;
+    let playScreenBgImg = null;
     let titleCharRedSheetImg = null;
     let titleCharBlueSheetImg = null;
     let playP1SheetImgLeft = null;
@@ -1263,6 +1271,21 @@
       return c ? c : [0, 0];
     }
 
+    function screenBackgroundUrl(kind) {
+      const def =
+        CONFIG.TITLE_BACKGROUND_URL != null && String(CONFIG.TITLE_BACKGROUND_URL).trim() !== ''
+          ? String(CONFIG.TITLE_BACKGROUND_URL).trim()
+          : '';
+      if (kind === 'title') {
+        const u = CONFIG.TITLE_SCREEN_BACKGROUND_URL;
+        if (u != null && String(u).trim() !== '') return String(u).trim();
+        return def;
+      }
+      const u = CONFIG.PLAY_SCREEN_BACKGROUND_URL;
+      if (u != null && String(u).trim() !== '') return String(u).trim();
+      return def;
+    }
+
     function initAssets(callback) {
       let pending = 0;
       const done = () => {
@@ -1276,12 +1299,32 @@
           done();
         });
       }
-      if (CONFIG.TITLE_BACKGROUND_URL) {
-        pending++;
-        loadImageSrc(CONFIG.TITLE_BACKGROUND_URL).then((img) => {
-          titleBackgroundImg = img;
-          done();
-        });
+      const uTitle = screenBackgroundUrl('title');
+      const uPlay = screenBackgroundUrl('play');
+      if (uTitle || uPlay) {
+        if (uTitle === uPlay) {
+          pending++;
+          loadImageSrc(uTitle).then((img) => {
+            titleScreenBgImg = img;
+            playScreenBgImg = img;
+            done();
+          });
+        } else {
+          if (uTitle) {
+            pending++;
+            loadImageSrc(uTitle).then((img) => {
+              titleScreenBgImg = img;
+              done();
+            });
+          }
+          if (uPlay) {
+            pending++;
+            loadImageSrc(uPlay).then((img) => {
+              playScreenBgImg = img;
+              done();
+            });
+          }
+        }
       }
       if (CONFIG.TITLE_CHAR_RED_SHEET && CONFIG.TITLE_CHAR_RED_SHEET.url) {
         pending++;
@@ -1721,18 +1764,19 @@
       if (state === 'TITLE') {
         if (code === 'ArrowUp' || code === 'KeyW') {
           if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateMenuPrevIndex === 'function') {
-            titleMenuIndex = window.RUBYFIGHT.gameStateMenuPrevIndex(titleMenuIndex, 2);
+            titleMenuIndex = window.RUBYFIGHT.gameStateMenuPrevIndex(titleMenuIndex, TITLE_MENU_ENTRY_COUNT);
           } else {
-            titleMenuIndex = (titleMenuIndex + 1) % 2;
+            titleMenuIndex =
+              (titleMenuIndex + TITLE_MENU_ENTRY_COUNT - 1) % TITLE_MENU_ENTRY_COUNT;
           }
           playSound('select');
           return;
         }
         if (code === 'ArrowDown' || code === 'KeyS') {
           if (window.RUBYFIGHT && window.RUBYFIGHT_SYNCED && typeof window.RUBYFIGHT.gameStateMenuNextIndex === 'function') {
-            titleMenuIndex = window.RUBYFIGHT.gameStateMenuNextIndex(titleMenuIndex, 2);
+            titleMenuIndex = window.RUBYFIGHT.gameStateMenuNextIndex(titleMenuIndex, TITLE_MENU_ENTRY_COUNT);
           } else {
-            titleMenuIndex = (titleMenuIndex + 1) % 2;
+            titleMenuIndex = (titleMenuIndex + 1) % TITLE_MENU_ENTRY_COUNT;
           }
           playSound('select');
           return;
@@ -2428,8 +2472,8 @@
         h: CONFIG.HEIGHT,
         fit: 'cover'
       };
-      if (titleBackgroundImg && titleBackgroundImg.naturalWidth > 0) {
-        drawImageInRect(titleBackgroundImg, full);
+      if (playScreenBgImg && playScreenBgImg.naturalWidth > 0) {
+        drawImageInRect(playScreenBgImg, full);
         drawBackdropVignette(0.06);
       } else if (assetSheetImg && assetSheetImg.naturalWidth > 0) {
         const [bc, br] = sheetCellPair('backgroundPattern');
@@ -2476,24 +2520,6 @@
         }
         ctx.stroke();
       }
-      ctx.restore();
-    }
-
-    function drawCornerGlint(x, y, s) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-      ctx.beginPath();
-      ctx.moveTo(0, -s);
-      ctx.lineTo(s * 0.35, -s * 0.35);
-      ctx.lineTo(s, 0);
-      ctx.lineTo(s * 0.35, s * 0.35);
-      ctx.lineTo(0, s);
-      ctx.lineTo(-s * 0.35, s * 0.35);
-      ctx.lineTo(-s, 0);
-      ctx.lineTo(-s * 0.35, -s * 0.35);
-      ctx.closePath();
-      ctx.fill();
       ctx.restore();
     }
 
@@ -2916,8 +2942,6 @@
       ctx.fillText(Math.ceil(timeRemaining).toString().padStart(2, '0'), CONFIG.WIDTH / 2 + 2, 52);
       ctx.fillStyle = timerColor;
       ctx.fillText(Math.ceil(timeRemaining).toString().padStart(2, '0'), CONFIG.WIDTH / 2, 50);
-
-      drawCornerGlint(CONFIG.WIDTH - 24, CONFIG.HEIGHT - 24, 8);
     }
 
     function drawTitleMenuAndFooter() {
@@ -2948,8 +2972,6 @@
       ctx.font = '11px "Press Start 2P", monospace';
       ctx.fillText('CONTROLS: P1 - WASD / SPACE, P2 - ARROWS / ENTER', CONFIG.WIDTH / 2, L.footerControlsY);
       ctx.fillText('F: BROWSER FULLSCREEN', CONFIG.WIDTH / 2, L.footerFullscreenY);
-      ctx.textAlign = 'right';
-      drawCornerGlint(CONFIG.WIDTH - 20, CONFIG.HEIGHT - 20, 8);
     }
 
     function drawTitle() {
@@ -2958,10 +2980,10 @@
       const L = UI_LAYOUT.title;
       const P = L.parts;
       const sheetOk = !!(assetSheetImg && assetSheetImg.naturalWidth > 0);
-      const hasTitleBg = !!(titleBackgroundImg && titleBackgroundImg.naturalWidth > 0);
+      const hasTitleBg = !!(titleScreenBgImg && titleScreenBgImg.naturalWidth > 0);
 
       if (hasTitleBg) {
-        drawImageInRect(titleBackgroundImg, { ...P.background, fit: 'cover' });
+        drawImageInRect(titleScreenBgImg, { ...P.background, fit: 'cover' });
         drawBackdropVignette(0.14);
       } else if (sheetOk) {
         const [bgc, bgr] = sheetCellPair('backgroundPattern');
@@ -3078,7 +3100,33 @@
     // ==========================================
     // メインループ
     // ==========================================
+    function drawFatalErrorScreen() {
+      ctx.save();
+      ctx.fillStyle = '#1a0508';
+      ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
+      ctx.fillStyle = '#ff8888';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.font = '14px monospace';
+      ctx.fillText('ゲームループでエラーが発生しました。コンソールを確認してください。', 24, 24);
+      ctx.fillStyle = '#ffcccc';
+      const msg =
+        fatalLoopError && fatalLoopError.message ? fatalLoopError.message : String(fatalLoopError);
+      let y = 52;
+      const lines = String(msg).split('\n');
+      for (let i = 0; i < lines.length && i < 8; i++) {
+        ctx.fillText(lines[i].slice(0, 100), 24, y);
+        y += 20;
+      }
+      ctx.restore();
+    }
+
     function gameLoop(now) {
+      if (fatalLoopError) {
+        drawFatalErrorScreen();
+        requestAnimationFrame(gameLoop);
+        return;
+      }
       const rawDt = (now - lastTime) / 1000;
       lastTime = now;
       // タブ復帰・デバッガー一時停止で rawDt が数秒以上になり、1 回で TIME UP になるのを防ぐ
@@ -3087,7 +3135,8 @@
         update(dt);
         draw();
       } catch (e) {
-        console.error('[RUBYFIGHT] main loop (update/draw) failed — loop continues', e);
+        fatalLoopError = e;
+        console.error('[RUBYFIGHT] main loop (update/draw) halted', e);
       }
       requestAnimationFrame(gameLoop);
     }
@@ -3107,7 +3156,24 @@
           console.error('[RUBYFIGHT] verify: CONFIG JSON re-parse failed');
           return;
         }
-        var keys = ['WIDTH', 'HEIGHT', 'TILE_SIZE', 'GRID_COLS', 'GRID_ROWS', 'GAME_TIME', 'RUSH_TIME'];
+        // BEGIN RUBYFIGHT_VERIFY_PAGE_CONFIG_KEYS（Minitest がこの範囲だけ読む）
+        // Ruby GameConfig::VERIFY_PAGE_CONFIG_KEYS と同一に保つ
+        var keys = [
+          'WIDTH',
+          'HEIGHT',
+          'TILE_SIZE',
+          'GRID_COLS',
+          'GRID_ROWS',
+          'GAME_TIME',
+          'RUSH_TIME',
+          'PREPLAY_COUNTDOWN_SEC',
+          'TITLE_BACKGROUND_URL',
+          'TITLE_SCREEN_BACKGROUND_URL',
+          'PLAY_SCREEN_BACKGROUND_URL',
+          'LOGO_KEY_MAX_RGB',
+          'LOGO_KEY_BY_MAX_CHANNEL'
+        ];
+        // END RUBYFIGHT_VERIFY_PAGE_CONFIG_KEYS
         for (var i = 0; i < keys.length; i++) {
           var k = keys[i];
           if (CONFIG[k] !== rb[k]) {

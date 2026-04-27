@@ -1,4 +1,6 @@
 .DS_Store
+# rake hosting:prepare で生成（リポジトリルートはデプロイに含めない）
+/public/
 .firebase/
 firebase-debug.log
 firestore-debug.log
