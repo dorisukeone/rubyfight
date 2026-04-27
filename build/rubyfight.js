@@ -24710,9 +24710,9 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
   function $rb_minus(lhs, rhs) {
     return (typeof(lhs) === 'number' && typeof(rhs) === 'number') ? lhs - rhs : lhs['$-'](rhs);
   }
-  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $hash2 = Opal.hash2;
+  var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $hash2 = Opal.hash2, $send = Opal.send, $truthy = Opal.truthy;
 
-  Opal.add_stubs(['$*', '$/', '$-', '$[]', '$to_browser_hash']);
+  Opal.add_stubs(['$freeze', '$*', '$/', '$-', '$[]', '$to_browser_hash', '$lambda', '$nil?', '$to_s', '$strip', '$include?', '$first', '$partition', '$empty?', '$basename', '$<<', '$call', '$each', '$uniq']);
   return (function($base, $parent_nesting) {
     var self = $module($base, 'Rubyfight');
 
@@ -24721,9 +24721,11 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
     (function($base, $parent_nesting) {
       var self = $module($base, 'GameConfig');
 
-      var $nesting = [self].concat($parent_nesting), $GameConfig_to_browser_hash$1, $GameConfig_field_width$2, $GameConfig_field_height$3;
+      var $nesting = [self].concat($parent_nesting), $GameConfig_to_browser_hash$1, $GameConfig_field_width$2, $GameConfig_field_height$3, $GameConfig_deploy_required_asset_paths_relative$4;
 
       
+      Opal.const_set($nesting[0], 'VERIFY_PAGE_CONFIG_KEYS', ["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "GAME_TIME", "RUSH_TIME", "PREPLAY_COUNTDOWN_SEC", "TITLE_BACKGROUND_URL", "TITLE_SCREEN_BACKGROUND_URL", "PLAY_SCREEN_BACKGROUND_URL", "LOGO_KEY_MAX_RGB", "LOGO_KEY_BY_MAX_CHANNEL"].$freeze());
+      Opal.const_set($nesting[0], 'DEPLOY_OPTIONAL_ASSET_BASENAMES', ["asset_sheet.png"].$freeze());
       Opal.defs(self, '$to_browser_hash', $GameConfig_to_browser_hash$1 = function $$to_browser_hash() {
         var self = this, width = nil, height = nil, tile = nil, grid_cols = nil, grid_rows = nil, field_w = nil, field_h = nil;
 
@@ -24747,6 +24749,70 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
 
         return self.$to_browser_hash()['$[]']("FIELD_HEIGHT")
       }, $GameConfig_field_height$3.$$arity = 0);
+      Opal.defs(self, '$deploy_required_asset_paths_relative', $GameConfig_deploy_required_asset_paths_relative$4 = function $$deploy_required_asset_paths_relative() {
+        var $$5, $$6, self = this, h = nil, out = nil, add = nil, tp = nil, $ret_or_1 = nil, p1 = nil, p2 = nil, $ret_or_2 = nil, $ret_or_3 = nil;
+
+        
+        h = self.$to_browser_hash();
+        out = [];
+        add = $send(self, 'lambda', [], ($$5 = function(u){var self = $$5.$$s == null ? this : $$5.$$s, raw = nil, s = nil, bn = nil;
+
+        
+          
+          if (u == null) {
+            u = nil;
+          };
+          if ($truthy(u['$nil?']())) {
+            return nil;};
+          raw = u.$to_s();
+          s = (function() {if ($truthy(raw['$include?']("?"))) {
+            return raw.$partition("?").$first()
+          } else {
+            return raw
+          }; return nil; })().$strip();
+          if ($truthy(s['$empty?']())) {
+            return nil;};
+          bn = $$($nesting, 'File').$basename(s);
+          if ($truthy($$($nesting, 'DEPLOY_OPTIONAL_ASSET_BASENAMES')['$include?'](bn))) {
+            return nil;};
+          return out['$<<'](s);}, $$5.$$s = self, $$5.$$arity = 1, $$5));
+        add.$call(h['$[]']("TITLE_BACKGROUND_URL"));
+        add.$call(h['$[]']("TITLE_SCREEN_BACKGROUND_URL"));
+        add.$call(h['$[]']("PLAY_SCREEN_BACKGROUND_URL"));
+        tp = (function() {if ($truthy(($ret_or_1 = h['$[]']("TITLE_PARTS")))) {
+          return $ret_or_1
+        } else {
+          return $hash2([], {})
+        }; return nil; })();
+        $send(["background", "logo", "charLeft", "charRight"], 'each', [], ($$6 = function(k){var self = $$6.$$s == null ? this : $$6.$$s;
+
+        
+          
+          if (k == null) {
+            k = nil;
+          };
+          return add.$call(tp['$[]'](k));}, $$6.$$s = self, $$6.$$arity = 1, $$6));
+        p1 = h['$[]']("PLAY_P1_SHEET");
+        if ($truthy(p1)) {
+          
+          add.$call(p1['$[]']("urlLeft"));
+          add.$call(p1['$[]']("urlRight"));
+          add.$call(p1['$[]']("url"));};
+        p2 = h['$[]']("PLAY_P2_SHEET");
+        if ($truthy(p2)) {
+          add.$call(p2['$[]']("url"))};
+        add.$call((function() {if ($truthy(($ret_or_2 = h['$[]']("TITLE_CHAR_RED_SHEET")))) {
+          return $ret_or_2
+        } else {
+          return $hash2([], {})
+        }; return nil; })()['$[]']("url"));
+        add.$call((function() {if ($truthy(($ret_or_3 = h['$[]']("TITLE_CHAR_BLUE_SHEET")))) {
+          return $ret_or_3
+        } else {
+          return $hash2([], {})
+        }; return nil; })()['$[]']("url"));
+        return out.$uniq();
+      }, $GameConfig_deploy_required_asset_paths_relative$4.$$arity = 0);
     })($nesting[0], $nesting)
   })($nesting[0], $nesting)
 };
