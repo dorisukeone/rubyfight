@@ -79,19 +79,23 @@ module Rubyfight
         # max(r,g,b) <= この値なら透過（周縁 BFS では届かない文字の穴のベタ黒用）。影が欠ける時は下げる / null で無効
         'LOGO_KEY_BY_MAX_CHANNEL' => 24,
         'TITLE_CHAR_RED_SHEET' => {
-          'url' => 'assets/title/char_red_sheet.png?v=17',
-          # 実寸 1368×80 = 24×57（元 1365 に右 3px: script/pad_char_red_sheet_to_24_cols.rb）
+          'url' => 'assets/title/char_red_sheet.png?v=19',
+          # 青と同じ: コマ 320×320・24 列＝シート 7680×320
           'cols' => 24,
           'rows' => 1,
-          'frameWidth' => 57,
-          'frameHeight' => 80,
+          'frameWidth' => 320,
+          'frameHeight' => 320,
           'frameLayout' => 'row',
           'fps' => 24,
           'frameStart' => 0,
           'frameCount' => 24,
           'fit' => 'contain',
           'clip' => false,
-          'sheetVAlign' => 'bottom',
+          'sheetVAlign' => 'center',
+          'sheetSourceUniformMax' => true,
+          'atlasSourceExact' => false,
+          'sheetSourceTrimEndX' => 0,
+          'sheetSmoothUpscale' => false,
           # 帯地が近黒（a=255）のベタ地のため max(r,g,b) で一括キー。輪郭が欠ける時は 22〜32 で調整
           'keyByMaxChannel' => 24,
           'removeEdgeBlack' => false,
@@ -100,9 +104,11 @@ module Rubyfight
           'matteColorMin' => 34
         },
         'TITLE_CHAR_BLUE_SHEET' => {
-          'url' => 'assets/title/char_blue_sheet.png?v=40',
+          'url' => 'assets/title/char_blue_sheet.png?v=57',
           'cols' => 24,
           'rows' => 1,
+          'frameWidth' => 320,
+          'frameHeight' => 320,
           'frameLayout' => 'row',
           'fps' => 24,
           'frameStart' => 0,
@@ -110,9 +116,10 @@ module Rubyfight
           'fit' => 'contain',
           'clip' => false,
           'sheetVAlign' => 'center',
-          'sheetSourceUniformMax' => false,
+          'sheetSourceUniformMax' => true,
           'atlasSourceExact' => false,
-          'sheetSourceTrimEndX' => 4,
+          'sheetSourceTrimEndX' => 0,
+          'sheetSmoothUpscale' => false,
           'keyByMaxChannel' => 32,
           'removeEdgeBlack' => false,
           'removeMatte' => false

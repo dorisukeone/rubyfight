@@ -138,19 +138,23 @@
       LOGO_KEY_BY_MAX_CHANNEL: 24,
 
       TITLE_CHAR_RED_SHEET: {
-        url: 'assets/title/char_red_sheet.png?v=17',
-        // 24 列: 1368×80 = 24×57（等分割＋ useFixedFrames 用に pad 済み asset）
+        url: 'assets/title/char_red_sheet.png?v=19',
+        // 青と同じ: コマ 320×320・24 列＝シート 7680×320
         cols: 24,
         rows: 1,
-        frameWidth: 57,
-        frameHeight: 80,
+        frameWidth: 320,
+        frameHeight: 320,
         frameLayout: 'row',
         fps: 24,
         frameStart: 0,
         frameCount: 24,
         fit: 'contain',
         clip: false,
-        sheetVAlign: 'bottom',
+        sheetVAlign: 'center',
+        sheetSourceUniformMax: true,
+        atlasSourceExact: false,
+        sheetSourceTrimEndX: 0,
+        sheetSmoothUpscale: false,
         // 帯地が（近）黒赤で a=255 のベタ地のため max(r,g,b) しきいで抜く（右3px透過列とは別）
         keyByMaxChannel: 24,
         removeEdgeBlack: false,
@@ -159,11 +163,13 @@
         matteColorMin: 34
       },
 
-      // タイトル右・青: 等分割 1024÷24。42/43 混在で max 幅基準の伸ばしが出るのを抑えるため sheetSourceUniformMax: false
+      // タイトル右・青: コマ 320×320・24 列＝シート 7680×320。frameWidth/Height で固定切り出し
       TITLE_CHAR_BLUE_SHEET: {
-        url: 'assets/title/char_blue_sheet.png?v=40',
+        url: 'assets/title/char_blue_sheet.png?v=57',
         cols: 24,
         rows: 1,
+        frameWidth: 320,
+        frameHeight: 320,
         frameLayout: 'row',
         fps: 24,
         frameStart: 0,
@@ -171,10 +177,10 @@
         fit: 'contain',
         clip: false,
         sheetVAlign: 'center',
-        sheetSourceUniformMax: false,
+        sheetSourceUniformMax: true,
         atlasSourceExact: false,
-        // 隣コマが滲むときは増やす（2 だと不十分なことがある）
-        sheetSourceTrimEndX: 4,
+        sheetSourceTrimEndX: 0,
+        sheetSmoothUpscale: false,
         keyByMaxChannel: 32,
         removeEdgeBlack: false,
         removeMatte: false
@@ -249,8 +255,8 @@
         parts: {
           background: { x: 0, y: 0, w: 960, h: 540, fit: 'cover' },
           logo: { x: 136, y: 32, w: 688, h: 252, fit: 'contain' },
-          charLeft: { x: 216, y: 288, w: 128, h: 166, fit: 'contain' },
-            charRight: { x: 622, y: 288, w: 128, h: 166, fit: 'contain' }
+          charLeft: { x: 190, y: 281, w: 180, h: 180, fit: 'contain' },
+            charRight: { x: 596, y: 281, w: 180, h: 180, fit: 'contain' }
         }
       }
     };
@@ -326,6 +332,19 @@
         sx, sy, sw, sh,
         Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh)
       );
+    }
+
+    /** タイトル用：低解像度コマを拡大するとき NN がギザつくため一時的にスムージング */
+    function drawImage9IntSmoothUpscale(img, sx, sy, sw, sh, dx, dy, dw, dh) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      if ('imageSmoothingQuality' in ctx) ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(
+        img,
+        Math.round(sx), Math.round(sy), Math.round(sw), Math.round(sh),
+        Math.round(dx), Math.round(dy), Math.round(dw), Math.round(dh)
+      );
+      ctx.restore();
     }
 
     const FIELD_WIDTH = CONFIG.TILE_SIZE * CONFIG.GRID_COLS;   
@@ -989,6 +1008,8 @@
       }
       if (rect.atlasSourceExact) {
         drawImage9SpriteAtlas(img, sx, sy, sw, sh, dx, dy, dwi, dhi);
+      } else if (rect.sheetSmoothUpscale === true && fstr === 'contain') {
+        drawImage9IntSmoothUpscale(img, sx, sy, sw, sh, dx, dy, dwi, dhi);
       } else {
         drawImage9Int(img, sx, sy, sw, sh, dx, dy, dwi, dhi);
       }
@@ -1128,7 +1149,8 @@
         uniformSourceCell: { w: uCellW, h: uCellH },
         atlasSourceExact: atlasExact,
         drawOffsetX: dox != null && dox !== '' && isFinite(Number(dox)) ? Math.trunc(Number(dox)) : 0,
-        drawOffsetY: doy != null && doy !== '' && isFinite(Number(doy)) ? Math.trunc(Number(doy)) : 0
+        drawOffsetY: doy != null && doy !== '' && isFinite(Number(doy)) ? Math.trunc(Number(doy)) : 0,
+        sheetSmoothUpscale: S.sheetSmoothUpscale === true
       };
       drawSpriteFrameInRect(img, sx, sy, sw, sh, r);
     }
