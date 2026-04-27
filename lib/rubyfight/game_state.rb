@@ -4,6 +4,7 @@ require 'rubyfight/graphics'
 module Rubyfight
   module GameState
     TITLE = 'TITLE'
+    COUNTDOWN = 'COUNTDOWN'
     PLAYING = 'PLAYING'
     RESULT = 'RESULT'
 

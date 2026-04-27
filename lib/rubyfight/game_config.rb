@@ -34,6 +34,8 @@ module Rubyfight
         },
         'GAME_TIME' => 55,
         'RUSH_TIME' => 15,
+        # タイトルから試合開始までのカウント（秒）。1 秒ごとに 5→…→1 表示
+        'PREPLAY_COUNTDOWN_SEC' => 5,
         # プレイ中の歩行（左・右で別シート、各 1x4）
         'PLAY_P1_SHEET' => {
           'urlLeft' => 'assets/play/p1_walk_left.png',
@@ -63,6 +65,8 @@ module Rubyfight
         },
         'LOGO_REMOVE_EDGE_BLACK' => true,
         'LOGO_KEY_MAX_RGB' => 32,
+        # max(r,g,b) <= この値なら透過（周縁 BFS では届かない文字の穴のベタ黒用）。影が欠ける時は下げる / null で無効
+        'LOGO_KEY_BY_MAX_CHANNEL' => 24,
         'TITLE_CHAR_RED_SHEET' => {
           'url' => 'assets/title/char_red_sheet.png?v=17',
           # 実寸 1368×80 = 24×57（元 1365 に右 3px: script/pad_char_red_sheet_to_24_cols.rb）
