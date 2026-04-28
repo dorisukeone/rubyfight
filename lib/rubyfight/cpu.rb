@@ -41,7 +41,7 @@ module Rubyfight
 
     # cpu_flags: [[gx,gy],...] 0〜2 本（Opal: JS から [ [gx,gy], ... ] ）
     # 旗 2 本時は「塗れるマス数」gain を常に最大に。同点は h（陣取り系）、さらに (gy, gx) で固定
-    def self.pick_target_center(grid, mask_rows, cpu_flags = nil, random: Random.new)
+    def self.pick_target_center(grid, mask_rows, cpu_flags = nil)
       fp = normalize_flag_pairs(cpu_flags)
 
       tile = Layout.tile_size
@@ -58,7 +58,8 @@ module Rubyfight
       entries = []
       rows.times do |y|
         cols.times do |x|
-          next if mask_rows[y][x] == ' '
+          row_m = mask_rows[y]
+          next if row_m.nil? || row_m[x] == ' '
           next if grid[y][x] == 2
 
           cx = x * tile + tile / 2.0
@@ -72,7 +73,8 @@ module Rubyfight
             nx = x + dx
             ny = y + dy
             next if nx < 0 || ny < 0 || nx >= cols || ny >= rows
-            next if mask_rows[ny][nx] == ' '
+            nr = mask_rows[ny]
+            next if nr.nil? || nr[nx] == ' '
 
             p1n += 1 if grid[ny][nx] == 1
             p0n += 1 if grid[ny][nx] == 0

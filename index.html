@@ -100,7 +100,7 @@
 
       GAME_TIME: 55,         
       RUSH_TIME: 15,
-      PREPLAY_COUNTDOWN_SEC: 5,
+      PREPLAY_COUNTDOWN_SEC: 3,
 
       PLAY_P1_SHEET: {
         urlLeft: 'assets/play/p1_walk_left.png',
@@ -1473,66 +1473,77 @@
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let lastPaintSoundTime = 0;
 
+    /** @param {string} type */
     function playSound(type) {
       try {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         const now = audioCtx.currentTime;
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        
+
         osc.connect(gain);
         gain.connect(audioCtx.destination);
 
         if (type === 'paint') {
-        const nowTs = Date.now();
-        if (nowTs - lastPaintSoundTime < 60) return;
-        lastPaintSoundTime = nowTs;
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
-        gain.gain.setValueAtTime(0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
-        osc.start(now);
-        osc.stop(now + 0.05);
-      } else if (type === 'flag') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        osc.start(now);
-        osc.stop(now + 0.05);
-      } else if (type === 'close') {
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.setValueAtTime(880, now + 0.1);
-        osc.frequency.setValueAtTime(1320, now + 0.2);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-      } else if (type === 'select') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(600, now);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
-      } else if (type === 'countdown') {
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(720, now);
-        gain.gain.setValueAtTime(0.08, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.07);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      } else if (type === 'finish') {
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.linearRampToValueAtTime(440, now + 0.5);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 1.0);
-        osc.start(now);
-        osc.stop(now + 1.0);
+          const nowTs = Date.now();
+          if (nowTs - lastPaintSoundTime < 60) return;
+          lastPaintSoundTime = nowTs;
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.05);
+          gain.gain.setValueAtTime(0.05, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'flag') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(600, now);
+          osc.frequency.exponentialRampToValueAtTime(1200, now + 0.05);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'close') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.setValueAtTime(880, now + 0.1);
+          osc.frequency.setValueAtTime(1320, now + 0.2);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else if (type === 'select') {
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(600, now);
+          gain.gain.setValueAtTime(0.1, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } else if (type === 'countdown') {
+          const hz = 1000;
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(hz, now);
+          gain.gain.setValueAtTime(0.11, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.048);
+          osc.start(now);
+          osc.stop(now + 0.052);
+        } else if (type === 'countdownGo') {
+          const hz = 1000;
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(hz, now);
+          gain.gain.setValueAtTime(0.11, now);
+          gain.gain.setValueAtTime(0.1, now + 0.06);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.52);
+          osc.start(now);
+          osc.stop(now + 0.55);
+        } else if (type === 'finish') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(880, now);
+          osc.frequency.linearRampToValueAtTime(440, now + 0.5);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.linearRampToValueAtTime(0.01, now + 1.0);
+          osc.start(now);
+          osc.stop(now + 1.0);
         }
       } catch (e) {
         console.warn('[RUBYFIGHT] playSound failed (continuing without audio)', e);
@@ -2249,8 +2260,8 @@
 
     function update(dt) {
       if (state === 'COUNTDOWN') {
-        const raw = CONFIG.PREPLAY_COUNTDOWN_SEC != null ? CONFIG.PREPLAY_COUNTDOWN_SEC : 5;
-        const total = isFinite(Number(raw)) && Number(raw) > 0 ? Number(raw) : 5;
+        const raw = CONFIG.PREPLAY_COUNTDOWN_SEC != null ? CONFIG.PREPLAY_COUNTDOWN_SEC : 3;
+        const total = isFinite(Number(raw)) && Number(raw) > 0 ? Number(raw) : 3;
         countdownElapsed += dt;
         const f = Math.floor(countdownElapsed);
         if (f !== countdownLastFloor) {
@@ -2260,7 +2271,7 @@
         if (countdownElapsed >= total) {
           state = 'PLAYING';
           stateStartTime = Date.now();
-          playSound('select');
+          playSound('countdownGo');
         }
         return;
       }
@@ -2468,10 +2479,10 @@
       }
     }
 
-    /** 試合開始前：5→…→1 を中央に重ね表示 */
+    /** 試合開始前：3→2→1 を中央に重ね表示 */
     function drawPreplayCountdownOverlay() {
-      const raw = CONFIG.PREPLAY_COUNTDOWN_SEC != null ? CONFIG.PREPLAY_COUNTDOWN_SEC : 5;
-      const total = isFinite(Number(raw)) && Number(raw) > 0 ? Number(raw) : 5;
+      const raw = CONFIG.PREPLAY_COUNTDOWN_SEC != null ? CONFIG.PREPLAY_COUNTDOWN_SEC : 3;
+      const total = isFinite(Number(raw)) && Number(raw) > 0 ? Number(raw) : 3;
       const n = Math.ceil(total - countdownElapsed);
       if (n <= 0) return;
       ctx.save();
@@ -3189,6 +3200,11 @@
           'GAME_TIME',
           'RUSH_TIME',
           'PREPLAY_COUNTDOWN_SEC',
+          'PLAYER_SIZE',
+          'BASE_SPEED',
+          'SPEED_UP_MULTIPLIER',
+          'CPU_SPEED_MULTIPLIER',
+          'PLAYER_VIS_SMOOTH',
           'TITLE_BACKGROUND_URL',
           'TITLE_SCREEN_BACKGROUND_URL',
           'PLAY_SCREEN_BACKGROUND_URL',

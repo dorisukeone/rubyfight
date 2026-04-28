@@ -34,11 +34,16 @@ class TerritoryTest < Minitest::Test
     assert s2.is_a?(Integer)
   end
 
+  # マスク付きフィールドでの塗りセル数（アルゴリズム退行検知用の固定値）。
+  # 三角形 [[10,8],[12,8],[11,10]] の大部分はルビー型 FIELD_MASK の外側のため
+  # 実際に塗れるのはマスク内の数マスだけとなり、現状の幾何では 5 セルになる。
+  REF_MASKED_TRI_FILL_COUNT = 5
+
   def test_fill_triangle_changes_ownership_and_score
     g = Rubyfight::Territory.empty_grid(ROWS, COLS)
     tri = [[10, 8], [12, 8], [11, 10]]
     filled = Rubyfight::Territory.fill_triangle!(g, 1, tri, MASK)
-    assert filled > 0
+    assert_equal REF_MASKED_TRI_FILL_COUNT, filled
     s1, s2 = Rubyfight::Territory.calc_scores(g, MASK)
     assert_equal s1, filled
     assert_equal 0, s2

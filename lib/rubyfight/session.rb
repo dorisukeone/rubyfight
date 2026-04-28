@@ -15,7 +15,7 @@ module Rubyfight
       Layout.default_spawn(:p2)
     end
 
-    # ブラウザ用の素の JS 二次元配列は main.rb の sessionBootstrapGrids ブリッジで生成（MRI では %x を使わない）
+    # 空グリッド 2 枚の正本。ブラウザは main.rb sessionBootstrapGrids が本メソッドを呼び Opal 配列を JS に写す。
     def self.ruby_empty_grid_pair
       rows = Layout.grid_rows
       cols = Layout.grid_cols

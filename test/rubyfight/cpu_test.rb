@@ -1,6 +1,7 @@
 require 'minitest/autorun'
 require 'rubyfight/game_config'
 require 'rubyfight/field_mask'
+require 'rubyfight/layout'
 require 'rubyfight/territory'
 require 'rubyfight/cpu'
 
@@ -24,11 +25,21 @@ class CpuTest < Minitest::Test
     assert_nil Rubyfight::Cpu.pick_target_center(g, MASK)
   end
 
-  def test_pick_deterministic_with_same_rng
+  def test_pick_tolerates_sparse_mask_row
     g = Rubyfight::Territory.empty_grid(ROWS, COLS)
-    r = Random.new(12345)
-    a = Rubyfight::Cpu.pick_target_center(g, MASK, random: r)
-    b = Rubyfight::Cpu.pick_target_center(g, MASK, random: Random.new(12345))
+    sparse = MASK.dup
+    sparse[3] = nil
+    pt = Rubyfight::Cpu.pick_target_center(g, sparse)
+    assert pt
+    cx, cy = pt
+    assert Rubyfight::Layout.player_position_valid?(cx, cy, MASK),
+           'sparse-mask CPU 目標は完全マスク上でもプレイヤー位置として有効であること'
+  end
+
+  def test_pick_repeatable_for_same_state
+    g = Rubyfight::Territory.empty_grid(ROWS, COLS)
+    a = Rubyfight::Cpu.pick_target_center(g, MASK)
+    b = Rubyfight::Cpu.pick_target_center(g, MASK)
     assert_equal a, b
   end
 

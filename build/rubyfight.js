@@ -24724,7 +24724,7 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
       var $nesting = [self].concat($parent_nesting), $GameConfig_to_browser_hash$1, $GameConfig_field_width$2, $GameConfig_field_height$3, $GameConfig_deploy_required_asset_paths_relative$4;
 
       
-      Opal.const_set($nesting[0], 'VERIFY_PAGE_CONFIG_KEYS', ["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "GAME_TIME", "RUSH_TIME", "PREPLAY_COUNTDOWN_SEC", "TITLE_BACKGROUND_URL", "TITLE_SCREEN_BACKGROUND_URL", "PLAY_SCREEN_BACKGROUND_URL", "LOGO_KEY_MAX_RGB", "LOGO_KEY_BY_MAX_CHANNEL"].$freeze());
+      Opal.const_set($nesting[0], 'VERIFY_PAGE_CONFIG_KEYS', ["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "GAME_TIME", "RUSH_TIME", "PREPLAY_COUNTDOWN_SEC", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "PLAYER_VIS_SMOOTH", "TITLE_BACKGROUND_URL", "TITLE_SCREEN_BACKGROUND_URL", "PLAY_SCREEN_BACKGROUND_URL", "LOGO_KEY_MAX_RGB", "LOGO_KEY_BY_MAX_CHANNEL"].$freeze());
       Opal.const_set($nesting[0], 'DEPLOY_OPTIONAL_ASSET_BASENAMES', ["asset_sheet.png"].$freeze());
       Opal.defs(self, '$to_browser_hash', $GameConfig_to_browser_hash$1 = function $$to_browser_hash() {
         var self = this, width = nil, height = nil, tile = nil, grid_cols = nil, grid_rows = nil, field_w = nil, field_h = nil;
@@ -24737,7 +24737,7 @@ Opal.modules["rubyfight/game_config"] = function(Opal) {
         grid_rows = 18;
         field_w = $rb_times(tile, grid_cols);
         field_h = $rb_times(tile, grid_rows);
-        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "PLAYER_VIS_SMOOTH", "COLORS", "GAME_TIME", "RUSH_TIME", "PREPLAY_COUNTDOWN_SEC", "PLAY_P1_SHEET", "PLAY_P2_SHEET", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "LOGO_KEY_BY_MAX_CHANNEL", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "TITLE_SCREEN_BACKGROUND_URL", "PLAY_SCREEN_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.4, "CPU_SPEED_MULTIPLIER": 1.42, "PLAYER_VIS_SMOOTH": 0, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 55, "RUSH_TIME": 15, "PREPLAY_COUNTDOWN_SEC": 5, "PLAY_P1_SHEET": $hash2(["urlLeft", "urlRight", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeMatte", "matteDarkMax", "matteColorMin"], {"urlLeft": "assets/play/p1_walk_left.png", "urlRight": "assets/play/p1_walk_right.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45}), "PLAY_P2_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeEdgeWhite", "keyMinRgb"], {"url": "assets/play/p2_walk.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeEdgeWhite": true, "keyMinRgb": 248}), "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "LOGO_KEY_BY_MAX_CHANNEL": 24, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "frameWidth", "frameHeight", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "sheetSourceUniformMax", "atlasSourceExact", "sheetSourceTrimEndX", "sheetSmoothUpscale", "keyByMaxChannel", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin"], {"url": "assets/title/char_red_sheet.png?v=19", "cols": 24, "rows": 1, "frameWidth": 320, "frameHeight": 320, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "center", "sheetSourceUniformMax": true, "atlasSourceExact": false, "sheetSourceTrimEndX": 0, "sheetSmoothUpscale": false, "keyByMaxChannel": 24, "removeEdgeBlack": false, "removeMatte": false, "matteDarkMax": 40, "matteColorMin": 34}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "frameWidth", "frameHeight", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "sheetSourceUniformMax", "atlasSourceExact", "sheetSourceTrimEndX", "sheetSmoothUpscale", "keyByMaxChannel", "removeEdgeBlack", "removeMatte"], {"url": "assets/title/char_blue_sheet.png?v=57", "cols": 24, "rows": 1, "frameWidth": 320, "frameHeight": 320, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "center", "sheetSourceUniformMax": true, "atlasSourceExact": false, "sheetSourceTrimEndX": 0, "sheetSmoothUpscale": false, "keyByMaxChannel": 32, "removeEdgeBlack": false, "removeMatte": false}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "TITLE_SCREEN_BACKGROUND_URL": "assets/title/title_background.png?v=screen", "PLAY_SCREEN_BACKGROUND_URL": "assets/title/title_background.png?v=play", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
+        return $hash2(["WIDTH", "HEIGHT", "TILE_SIZE", "GRID_COLS", "GRID_ROWS", "PLAYER_SIZE", "BASE_SPEED", "SPEED_UP_MULTIPLIER", "CPU_SPEED_MULTIPLIER", "PLAYER_VIS_SMOOTH", "COLORS", "GAME_TIME", "RUSH_TIME", "PREPLAY_COUNTDOWN_SEC", "PLAY_P1_SHEET", "PLAY_P2_SHEET", "TITLE_PARTS", "LOGO_REMOVE_EDGE_BLACK", "LOGO_KEY_MAX_RGB", "LOGO_KEY_BY_MAX_CHANNEL", "TITLE_CHAR_RED_SHEET", "TITLE_CHAR_BLUE_SHEET", "TITLE_BACKGROUND_URL", "TITLE_SCREEN_BACKGROUND_URL", "PLAY_SCREEN_BACKGROUND_URL", "ASSET_SHEET", "FIELD_WIDTH", "FIELD_HEIGHT", "OFFSET_X", "OFFSET_Y"], {"WIDTH": width, "HEIGHT": height, "TILE_SIZE": tile, "GRID_COLS": grid_cols, "GRID_ROWS": grid_rows, "PLAYER_SIZE": 28, "BASE_SPEED": 160, "SPEED_UP_MULTIPLIER": 1.4, "CPU_SPEED_MULTIPLIER": 1.42, "PLAYER_VIS_SMOOTH": 0, "COLORS": $hash2(["bg", "fieldBg", "p1", "p2", "ui", "highlight", "hudGold", "hudGoldDim"], {"bg": "#2e0f0f", "fieldBg": "#4a1a1a", "p1": $hash2(["tile", "player"], {"tile": "#e65c5c", "player": "#c44848"}), "p2": $hash2(["tile", "player"], {"tile": "#6ea2e4", "player": "#487ec4"}), "ui": "#ffdddd", "highlight": "#ffffff", "hudGold": "#f5b042", "hudGoldDim": "#c98a2c"}), "GAME_TIME": 55, "RUSH_TIME": 15, "PREPLAY_COUNTDOWN_SEC": 3, "PLAY_P1_SHEET": $hash2(["urlLeft", "urlRight", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeMatte", "matteDarkMax", "matteColorMin"], {"urlLeft": "assets/play/p1_walk_left.png", "urlRight": "assets/play/p1_walk_right.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeMatte": true, "matteDarkMax": 40, "matteColorMin": 45}), "PLAY_P2_SHEET": $hash2(["url", "cols", "rows", "frameLayout", "walkCyclesPerSec", "removeEdgeWhite", "keyMinRgb"], {"url": "assets/play/p2_walk.png", "cols": 4, "rows": 1, "frameLayout": "row", "walkCyclesPerSec": 10, "removeEdgeWhite": true, "keyMinRgb": 248}), "TITLE_PARTS": $hash2(["background", "logo", "charLeft", "charRight"], {"background": "", "logo": "assets/title/logo.png", "charLeft": "", "charRight": ""}), "LOGO_REMOVE_EDGE_BLACK": true, "LOGO_KEY_MAX_RGB": 32, "LOGO_KEY_BY_MAX_CHANNEL": 24, "TITLE_CHAR_RED_SHEET": $hash2(["url", "cols", "rows", "frameWidth", "frameHeight", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "sheetSourceUniformMax", "atlasSourceExact", "sheetSourceTrimEndX", "sheetSmoothUpscale", "keyByMaxChannel", "removeEdgeBlack", "removeMatte", "matteDarkMax", "matteColorMin"], {"url": "assets/title/char_red_sheet.png?v=19", "cols": 24, "rows": 1, "frameWidth": 320, "frameHeight": 320, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "center", "sheetSourceUniformMax": true, "atlasSourceExact": false, "sheetSourceTrimEndX": 0, "sheetSmoothUpscale": false, "keyByMaxChannel": 24, "removeEdgeBlack": false, "removeMatte": false, "matteDarkMax": 40, "matteColorMin": 34}), "TITLE_CHAR_BLUE_SHEET": $hash2(["url", "cols", "rows", "frameWidth", "frameHeight", "frameLayout", "fps", "frameStart", "frameCount", "fit", "clip", "sheetVAlign", "sheetSourceUniformMax", "atlasSourceExact", "sheetSourceTrimEndX", "sheetSmoothUpscale", "keyByMaxChannel", "removeEdgeBlack", "removeMatte"], {"url": "assets/title/char_blue_sheet.png?v=57", "cols": 24, "rows": 1, "frameWidth": 320, "frameHeight": 320, "frameLayout": "row", "fps": 24, "frameStart": 0, "frameCount": 24, "fit": "contain", "clip": false, "sheetVAlign": "center", "sheetSourceUniformMax": true, "atlasSourceExact": false, "sheetSourceTrimEndX": 0, "sheetSmoothUpscale": false, "keyByMaxChannel": 32, "removeEdgeBlack": false, "removeMatte": false}), "TITLE_BACKGROUND_URL": "assets/title/title_background.png", "TITLE_SCREEN_BACKGROUND_URL": "assets/title/title_background.png?v=screen", "PLAY_SCREEN_BACKGROUND_URL": "assets/title/title_background.png?v=play", "ASSET_SHEET": $hash2(["url", "sheetW", "sheetH", "cols", "rows", "gridRect", "cellInset", "tileScale", "cells"], {"url": "assets/title/asset_sheet.png", "sheetW": 1024, "sheetH": 571, "cols": 3, "rows": 2, "gridRect": $hash2(["x", "y", "w", "h"], {"x": 12, "y": 54, "w": 1000, "h": 476}), "cellInset": 2, "tileScale": 0.55, "cells": $hash2(["logo", "charRed", "charBlue", "backgroundPattern", "fieldGrid", "uiRef"], {"logo": [0, 0], "charRed": [1, 0], "charBlue": [2, 0], "backgroundPattern": [0, 1], "fieldGrid": [1, 1], "uiRef": [2, 1]})}), "FIELD_WIDTH": field_w, "FIELD_HEIGHT": field_h, "OFFSET_X": $rb_divide($rb_minus(width, field_w), 2), "OFFSET_Y": 110});
       }, $GameConfig_to_browser_hash$1.$$arity = 0);
       Opal.defs(self, '$field_width', $GameConfig_field_width$2 = function $$field_width() {
         var self = this;
@@ -25275,7 +25275,7 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
   }
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module, $truthy = Opal.truthy, $send = Opal.send, $hash2 = Opal.hash2;
 
-  Opal.add_stubs(['$require', '$nil?', '$respond_to?', '$to_a', '$is_a?', '$compact', '$map', '$>=', '$length', '$to_i', '$[]', '$+', '$*', '$==', '$new', '$normalize_flag_pairs', '$tile_size', '$grid_rows', '$grid_cols', '$to_browser_hash', '$to_f', '$/', '$max', '$<', '$times', '$player_position_valid?', '$each', '$hypot', '$-', '$min', '$heur_score', '$simulated_fill_count', '$<<', '$abs', '$empty?', '$select', '$min_by', '$rand']);
+  Opal.add_stubs(['$require', '$nil?', '$respond_to?', '$to_a', '$is_a?', '$compact', '$map', '$>=', '$length', '$to_i', '$[]', '$+', '$*', '$==', '$normalize_flag_pairs', '$tile_size', '$grid_rows', '$grid_cols', '$to_browser_hash', '$to_f', '$/', '$max', '$<', '$times', '$player_position_valid?', '$each', '$hypot', '$-', '$min', '$heur_score', '$simulated_fill_count', '$<<', '$abs', '$empty?', '$select', '$min_by', '$new', '$rand']);
   
   self.$require("rubyfight/game_config");
   self.$require("rubyfight/territory");
@@ -25345,32 +25345,13 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
           return 0
         }; return nil; })()), $rb_times($$($nesting, 'W_CENTER'), cbonus))
       }, $Cpu_heur_score$3.$$arity = 4);
-      Opal.defs(self, '$pick_target_center', $Cpu_pick_target_center$4 = function $$pick_target_center(grid, mask_rows, $a, $b) {
-        var $post_args, $kwargs, cpu_flags, random, $$5, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, self = this, fp = nil, tile = nil, rows = nil, cols = nil, cfg = nil, fw = nil, fh = nil, cx0 = nil, cy0 = nil, mxy = nil, entries = nil, gmax = nil, t = nil, hmax = nil, best = nil;
+      Opal.defs(self, '$pick_target_center', $Cpu_pick_target_center$4 = function $$pick_target_center(grid, mask_rows, cpu_flags) {
+        var $$5, $$8, $$9, $$10, $$11, $$12, $$13, $$14, $$15, self = this, fp = nil, tile = nil, rows = nil, cols = nil, cfg = nil, fw = nil, fh = nil, cx0 = nil, cy0 = nil, mxy = nil, entries = nil, gmax = nil, t = nil, hmax = nil, best = nil;
 
         
         
-        $post_args = Opal.slice.call(arguments, 2, arguments.length);
-        
-        $kwargs = Opal.extract_kwargs($post_args);
-        
-        if ($kwargs == null) {
-          $kwargs = $hash2([], {});
-        } else if (!$kwargs.$$is_hash) {
-          throw Opal.ArgumentError.$new('expected kwargs');
-        };
-        
-        if ($post_args.length > 0) {
-          cpu_flags = $post_args[0];
-          $post_args.splice(0, 1);
-        }
         if (cpu_flags == null) {
           cpu_flags = nil;
-        };
-        
-        random = $kwargs.$$smap["random"];
-        if (random == null) {
-          random = $$($nesting, 'Random').$new()
         };
         fp = self.$normalize_flag_pairs(cpu_flags);
         tile = $$($nesting, 'Layout').$tile_size();
@@ -25392,14 +25373,19 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
           if (y == null) {
             y = nil;
           };
-          return $send(cols, 'times', [], ($$6 = function(x){var self = $$6.$$s == null ? this : $$6.$$s, $$7, cx = nil, cy = nil, c = nil, p1n = nil, p0n = nil, d = nil, cbonus = nil, h = nil, tri = nil, gain = nil, fx = nil, fy = nil, span = nil, s = nil;
+          return $send(cols, 'times', [], ($$6 = function(x){var self = $$6.$$s == null ? this : $$6.$$s, $$7, row_m = nil, $ret_or_3 = nil, cx = nil, cy = nil, c = nil, p1n = nil, p0n = nil, d = nil, cbonus = nil, h = nil, tri = nil, gain = nil, fx = nil, fy = nil, span = nil, s = nil;
 
           
             
             if (x == null) {
               x = nil;
             };
-            if (mask_rows['$[]'](y)['$[]'](x)['$=='](" ")) {
+            row_m = mask_rows['$[]'](y);
+            if ($truthy((function() {if ($truthy(($ret_or_3 = row_m['$nil?']()))) {
+              return $ret_or_3
+            } else {
+              return row_m['$[]'](x)['$=='](" ")
+            }; return nil; })())) {
               return nil;};
             if (grid['$[]'](y)['$[]'](x)['$=='](2)) {
               return nil;};
@@ -25412,7 +25398,7 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
             c = grid['$[]'](y)['$[]'](x);
             p1n = 0;
             p0n = 0;
-            $send([[-1, 0], [1, 0], [0, -1], [0, 1]], 'each', [], ($$7 = function(dx, dy){var self = $$7.$$s == null ? this : $$7.$$s, nx = nil, ny = nil, $ret_or_3 = nil, $ret_or_4 = nil, $ret_or_5 = nil;
+            $send([[-1, 0], [1, 0], [0, -1], [0, 1]], 'each', [], ($$7 = function(dx, dy){var self = $$7.$$s == null ? this : $$7.$$s, nx = nil, ny = nil, $ret_or_4 = nil, $ret_or_5 = nil, $ret_or_6 = nil, nr = nil, $ret_or_7 = nil;
 
             
               
@@ -25425,21 +25411,26 @@ Opal.modules["rubyfight/cpu"] = function(Opal) {
               };
               nx = $rb_plus(x, dx);
               ny = $rb_plus(y, dy);
-              if ($truthy((function() {if ($truthy(($ret_or_3 = (function() {if ($truthy(($ret_or_4 = (function() {if ($truthy(($ret_or_5 = $rb_lt(nx, 0)))) {
-                return $ret_or_5
+              if ($truthy((function() {if ($truthy(($ret_or_4 = (function() {if ($truthy(($ret_or_5 = (function() {if ($truthy(($ret_or_6 = $rb_lt(nx, 0)))) {
+                return $ret_or_6
               } else {
                 return $rb_lt(ny, 0)
               }; return nil; })()))) {
-                return $ret_or_4
+                return $ret_or_5
               } else {
                 return $rb_ge(nx, cols)
               }; return nil; })()))) {
-                return $ret_or_3
+                return $ret_or_4
               } else {
                 return $rb_ge(ny, rows)
               }; return nil; })())) {
                 return nil;};
-              if (mask_rows['$[]'](ny)['$[]'](nx)['$=='](" ")) {
+              nr = mask_rows['$[]'](ny);
+              if ($truthy((function() {if ($truthy(($ret_or_7 = nr['$nil?']()))) {
+                return $ret_or_7
+              } else {
+                return nr['$[]'](nx)['$=='](" ")
+              }; return nil; })())) {
                 return nil;};
               if (grid['$[]'](ny)['$[]'](nx)['$=='](1)) {
                 p1n = $rb_plus(p1n, 1)};
@@ -26127,7 +26118,7 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
 (function(Opal) {
   var self = Opal.top, $nesting = [], nil = Opal.nil, $$$ = Opal.$$$, $$ = Opal.$$, $module = Opal.module;
 
-  Opal.add_stubs(['$require', '$puts', '$boot_banner', '$dump', '$to_browser_hash', '$grid_rows', '$grid_cols', '$expose_to_browser!', '$attach_layout_bridge!', '$attach_territory_bridge!', '$attach_cpu_bridge!', '$attach_movement_bridge!', '$attach_match_bridge!', '$attach_session_bridge!', '$attach_graphics_bridge!', '$attach_game_state_bridge!', '$announce!']);
+  Opal.add_stubs(['$require', '$puts', '$boot_banner', '$dump', '$to_browser_hash', '$expose_to_browser!', '$attach_layout_bridge!', '$attach_territory_bridge!', '$attach_cpu_bridge!', '$attach_movement_bridge!', '$attach_match_bridge!', '$attach_session_bridge!', '$attach_graphics_bridge!', '$attach_game_state_bridge!', '$announce!']);
   
   self.$require("opal");
   self.$require("json");
@@ -26322,12 +26313,10 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
     ;
     }, $Rubyfight_attach_match_bridge$excl$8.$$arity = 0);
     Opal.defs(self, '$attach_session_bridge!', $Rubyfight_attach_session_bridge$excl$9 = function() {
-      var self = this, s = nil, rows = nil, cols = nil;
+      var self = this, s = nil;
 
       
       s = $$($nesting, 'Session');
-      rows = $$($nesting, 'Layout').$grid_rows();
-      cols = $$($nesting, 'Layout').$grid_cols();
       
       window.RUBYFIGHT = window.RUBYFIGHT || {};
       var _ses = s;
@@ -26345,16 +26334,32 @@ Opal.modules["rubyfight/ui_layout"] = function(Opal) {
         return [N(a[0]), N(a[1])];
       };
       window.RUBYFIGHT.sessionBootstrapGrids = function() {
-        function makeEmpty() {
+        var pair = _ses['$ruby_empty_grid_pair']();
+        if (pair == null || typeof pair.length !== 'number' || pair.length < 2) {
+          console.error('[RUBYFIGHT] sessionBootstrapGrids: ruby_empty_grid_pair must return [grid, grid]');
+          throw new Error('RUBYFIGHT: invalid ruby_empty_grid_pair');
+        }
+        function opalGridToJs(opalGrid) {
+          if (opalGrid == null || typeof opalGrid.length !== 'number') {
+            console.error('[RUBYFIGHT] sessionBootstrapGrids: expected 2D array from Ruby');
+            throw new Error('RUBYFIGHT: grid is not array-like');
+          }
           var g = [];
-          for (var y = 0; y < rows; y++) {
+          for (var y = 0; y < opalGrid.length; y++) {
+            var r = opalGrid[y];
+            if (r == null || typeof r.length !== 'number') {
+              console.error('[RUBYFIGHT] sessionBootstrapGrids: bad row', y);
+              throw new Error('RUBYFIGHT: grid row is not array-like');
+            }
             var row = [];
-            for (var x = 0; x < cols; x++) { row.push(0); }
+            for (var x = 0; x < r.length; x++) {
+              row.push(window.RUBYFIGHT.__rbNum(r[x]));
+            }
             g.push(row);
           }
           return g;
         }
-        return [makeEmpty(), makeEmpty()];
+        return [opalGridToJs(pair[0]), opalGridToJs(pair[1])];
       };
     ;
     }, $Rubyfight_attach_session_bridge$excl$9.$$arity = 0);

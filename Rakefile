@@ -79,7 +79,7 @@ task 'hosting:prepare' do
 end
 
 desc 'public/ に必須ファイル・GameConfig 由来のアセットが揃っているか検証（hosting:prepare 後）'
-task 'hosting:verify' => ['hosting:prepare'] do
+task 'hosting:verify' => %w[opal:build hosting:prepare] do
   pub = File.join(__dir__, 'public')
   index_p = File.join(pub, 'index.html')
   js_p = File.join(pub, 'build', 'rubyfight.js')
@@ -99,7 +99,7 @@ task 'hosting:verify' => ['hosting:prepare'] do
 end
 
 desc 'テスト → ビルド → public 同期・検証 → firebase deploy --only hosting'
-task 'hosting:deploy' => %w[test opal:build hosting:verify] do
+task 'hosting:deploy' => %w[test hosting:verify] do
   sh 'firebase deploy --only hosting'
 end
 

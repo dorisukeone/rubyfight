@@ -6,6 +6,7 @@ module Rubyfight
     VERIFY_PAGE_CONFIG_KEYS = %w[
       WIDTH HEIGHT TILE_SIZE GRID_COLS GRID_ROWS GAME_TIME RUSH_TIME
       PREPLAY_COUNTDOWN_SEC
+      PLAYER_SIZE BASE_SPEED SPEED_UP_MULTIPLIER CPU_SPEED_MULTIPLIER PLAYER_VIS_SMOOTH
       TITLE_BACKGROUND_URL TITLE_SCREEN_BACKGROUND_URL PLAY_SCREEN_BACKGROUND_URL
       LOGO_KEY_MAX_RGB LOGO_KEY_BY_MAX_CHANNEL
     ].freeze
@@ -45,8 +46,8 @@ module Rubyfight
         },
         'GAME_TIME' => 55,
         'RUSH_TIME' => 15,
-        # タイトルから試合開始までのカウント（秒）。1 秒ごとに 5→…→1 表示
-        'PREPLAY_COUNTDOWN_SEC' => 5,
+        # タイトルから試合開始までのカウント（秒）。1 秒ごとに 3→2→1 表示
+        'PREPLAY_COUNTDOWN_SEC' => 3,
         # プレイ中の歩行（左・右で別シート、各 1x4）
         'PLAY_P1_SHEET' => {
           'urlLeft' => 'assets/play/p1_walk_left.png',

@@ -179,8 +179,6 @@ module Rubyfight
 
   def self.attach_session_bridge!
     s = Session
-    rows = Layout.grid_rows
-    cols = Layout.grid_cols
     %x{
       window.RUBYFIGHT = window.RUBYFIGHT || {};
       var _ses = #{s};
@@ -198,16 +196,32 @@ module Rubyfight
         return [N(a[0]), N(a[1])];
       };
       window.RUBYFIGHT.sessionBootstrapGrids = function() {
-        function makeEmpty() {
+        var pair = _ses['$ruby_empty_grid_pair']();
+        if (pair == null || typeof pair.length !== 'number' || pair.length < 2) {
+          console.error('[RUBYFIGHT] sessionBootstrapGrids: ruby_empty_grid_pair must return [grid, grid]');
+          throw new Error('RUBYFIGHT: invalid ruby_empty_grid_pair');
+        }
+        function opalGridToJs(opalGrid) {
+          if (opalGrid == null || typeof opalGrid.length !== 'number') {
+            console.error('[RUBYFIGHT] sessionBootstrapGrids: expected 2D array from Ruby');
+            throw new Error('RUBYFIGHT: grid is not array-like');
+          }
           var g = [];
-          for (var y = 0; y < #{rows}; y++) {
+          for (var y = 0; y < opalGrid.length; y++) {
+            var r = opalGrid[y];
+            if (r == null || typeof r.length !== 'number') {
+              console.error('[RUBYFIGHT] sessionBootstrapGrids: bad row', y);
+              throw new Error('RUBYFIGHT: grid row is not array-like');
+            }
             var row = [];
-            for (var x = 0; x < #{cols}; x++) { row.push(0); }
+            for (var x = 0; x < r.length; x++) {
+              row.push(window.RUBYFIGHT.__rbNum(r[x]));
+            }
             g.push(row);
           }
           return g;
         }
-        return [makeEmpty(), makeEmpty()];
+        return [opalGridToJs(pair[0]), opalGridToJs(pair[1])];
       };
     }
   end
