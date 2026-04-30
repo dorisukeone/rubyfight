@@ -7,7 +7,6 @@ module Rubyfight
           'logoCenterX' => 480,
           'juggingY' => 44,
           'mainTitleY' => 126,
-          'subRubykaigiY' => 192,
           'subTerritoryY' => 216,
           # サブタイトル〜メニュー〜キャラの縦バランス（2 項目メニュー想定）
           'menu' => { 'y' => 292 },

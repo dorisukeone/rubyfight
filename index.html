@@ -243,7 +243,6 @@
         logoCenterX: 480,
         juggingY: 44,
         mainTitleY: 126,
-        subRubykaigiY: 192,
         subTerritoryY: 216,
         menu: { y: 292 },
         // メニュー文案の左右の空き（中央 480 対称）。mascot* は drawPixelSprite の中心
@@ -604,12 +603,6 @@
       drawMiniRuby(xRuby, ty, 15);
       drawChunk(right, x0 + wL + gap + rubySlot + gap + wR / 2);
 
-      ctx.font = '11px "Press Start 2P", monospace';
-      ctx.strokeStyle = '#1a0a08';
-      ctx.lineWidth = 2;
-      ctx.strokeText('RUBYKAIGI', cx, L.subRubykaigiY);
-      ctx.fillStyle = '#c83828';
-      ctx.fillText('RUBYKAIGI', cx, L.subRubykaigiY);
       ctx.font = '12px "Press Start 2P", monospace';
       ctx.strokeStyle = '#2a1408';
       ctx.strokeText('TERRITORY FIGHT', cx, L.subTerritoryY);
